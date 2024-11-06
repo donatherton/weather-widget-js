@@ -124,17 +124,17 @@
         const sunsetHour = formatTime(sunset.getHours());
         const sunsetMin = formatTime(sunset.getMinutes());
 
-        document.getElementById('current').innerHTML =	'<table><tbody>'
-          + `<tr><td colspan="3" style="padding:10px;"><h3>${geolocation}</h3>`
-          + `<h3>${(Math.round((data.temp) * 10) / 10)}&deg;C</h3>`
-          + `<p style="font-variant:small-caps;">${data.weather[0].description}<br>`
-          + `<img src="PNG/${data.weather[0].icon}.png" width="60" height="60" alt="${data.weather[0].description}"></p></td>`
-          + `<td colspan="4" style="padding:10px;"><p>Wind: ${Math.round(data.wind_speed * 1.944)}${gust}kt ${getWndDir(data.wind_deg)}<br>`
-          + `Pressure: ${data.pressure}mb<br>`
-          + `Humidity: ${data.humidity}&percnt;</p>`
-          + `<p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>`
-          + `<p>Updated: ${h}:${m}:${s}</p></td></tr>`
-          + '<tr id="forecast">';
+        document.getElementById('current').innerHTML =	`<table><tbody>
+          <tr><td colspan="3" style="padding:10px;"><h3>${geolocation}</h3>
+          <h3>${(Math.round((data.temp) * 10) / 10)}&deg;C</h3>
+          <p style="font-variant:small-caps;">${data.weather[0].description}<br>
+          <img src="PNG/${data.weather[0].icon}.png" width="60" height="60" alt="${data.weather[0].description}"></p></td>
+          <td colspan="4" style="padding:10px;"><p>Wind: ${Math.round(data.wind_speed * 1.944)}${gust}kt ${getWndDir(data.wind_deg)}<br>
+          Pressure: ${data.pressure}mb<br>
+          Humidity: ${data.humidity}&percnt;</p>
+          <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
+          <p>Updated: ${h}:${m}:${s}</p></td></tr>
+          <tr id="forecast">`;
 
         // 7 day forecast;
         data = result.daily;
@@ -160,15 +160,15 @@
           if (data[i].wind_gust > 0) { gust = `/${Math.round(data[i].wind_gust * 1.944)}`; } else gust = '';
 
           document.getElementById('forecast').innerHTML
-            += `<td><table><tr><td>${d}</td></tr><tr><td title="Min/max temp">${Math.round(data[i].temp.max)}/${Math.round(data[i].temp.min)}&deg;C</td></tr>`
-            + `<tr><td title="${data[i].weather[0].description.toUpperCase()}">` 
-            + `<img src="PNG/${data[i].weather[0].icon}.png" width="30" height="30" alt="${data[i].weather[0].description}"></td></tr>`
-            + `<tr><td title="Wind speed/gust">${Math.round(data[i].wind_speed * 1.944)}${gust}kt</td></tr>`
-            + `<tr><td title="Wind direction">${getWndDir(data[i].wind_deg)}</td></tr>`
-            + `<tr><td title="Chance of rain">${Math.round(data[i].pop * 100)}&percnt;</td></tr>`
-            + `<tr><td title="Amount of rain">${rain}mm</td></tr>`
-            + `<tr><td title="Pressure">${Math.round(data[i].pressure)}mb</td></tr>`
-            + '</table>';
+            += `<td><table><tr><td>${d}</td></tr><tr><td title="Min/max temp">${Math.round(data[i].temp.max)}/${Math.round(data[i].temp.min)}&deg;C</td></tr>
+            <tr><td title="${data[i].weather[0].description.toUpperCase()}">
+            <img src="PNG/${data[i].weather[0].icon}.png" width="30" height="30" alt="${data[i].weather[0].description}"></td></tr>
+            <tr><td title="Wind speed/gust">${Math.round(data[i].wind_speed * 1.944)}${gust}kt</td></tr>
+            <tr><td title="Wind direction">${getWndDir(data[i].wind_deg)}</td></tr>
+            <tr><td title="Chance of rain">${Math.round(data[i].pop * 100)}&percnt;</td></tr>
+            <tr><td title="Amount of rain">${rain}mm</td></tr>
+            <tr><td title="Pressure">${Math.round(data[i].pressure)}mb</td></tr>
+            </table>`;
         }
         document.getElementById('current').innerHTML += '</td></tr></tbody></table></div>';
       }
@@ -198,17 +198,17 @@
         }
       };
 
-      xhttp.open('GET', `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}`
-        + `&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${APPID}`, true);
+      xhttp.open('GET', `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}
+        &lon=${lon}&exclude=minutely,alerts&units=metric&appid=${APPID}`, true);
       xhttp.send();
     </script>
     <div id="links" style="position:relative;">
 
       <script>
         document.getElementById('links').innerHTML =
-          `<p><a href="hourly.html?lat=${lat}&lon=${lon}&geolocation=${geolocation}&appid=${APPID}">Hourly 48h</a>`
-          + ` <a href="5-days.html?lat=${lat}&lon=${lon}&geolocation=${geolocation}&appid=${APPID}">3 hourly 5 days</a>`
-          + ` <a href="radar.html?lat=${lat}&lon=${lon}">Rainfall radar</a></p>`
+          `<p><a href="hourly.html?lat=${lat}&lon=${lon}&geolocation=${geolocation}&appid=${APPID}">Hourly 48h</a>
+           <a href="5-days.html?lat=${lat}&lon=${lon}&geolocation=${geolocation}&appid=${APPID}">3 hourly 5 days</a>
+           <a href="radar.html?lat=${lat}&lon=${lon}">Rainfall radar</a></p>`
       </script>
 
     </div>

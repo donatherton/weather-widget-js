@@ -162,12 +162,11 @@ function init_widget(result) {
         else if (dn === '-n') dnColour = 'style="background-color:#ddd"';
 
         document.getElementById('forecast').innerHTML
-		+= `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>`
-		 + `<td style="padding-right:3px;color:${tempColour(temp)}"><strong>${temp}&deg;C</strong></td>`
-		 + `<td><image src="PNG/${sym}.png" alt="${cond}" width="30" height="30"></td>`
-		 + `<td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>`
-		 + `<td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wndSpdColour(wndSpd)}">`
-		 + `${wndSpd}kt</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
+		+= `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
+		 <td style="padding-right:3px;color:${tempColour(temp)}"><strong>${temp}&deg;C</strong></td>
+		 <td><image src="PNG/${sym}.png" alt="${cond}" width="30" height="30"></td>
+		 <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
+		 <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wndSpdColour(wndSpd)}">${wndSpd}kt</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
     }
 }
 
@@ -187,8 +186,8 @@ xhttp.onreadystatechange = function () {
         init_widget(result);
     }
 };
-xhttp.open('GET', `https://api.openweathermap.org/data/2.5/forecast?lat=${vars.lat}&lon=${vars.lon}`
-+ `&appid=${vars.appid}&mode=xml`, true);
+xhttp.open('GET', `https://api.openweathermap.org/data/2.5/forecast?lat=${vars.lat}&lon=${vars.lon}
+&appid=${vars.appid}&mode=xml`, true);
 xhttp.send();
 </script>
 
