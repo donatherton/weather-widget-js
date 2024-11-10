@@ -72,13 +72,6 @@
         return false;
       }
 
-      function formatTime(x) {
-        // Converts eg 12:3 to 12:03
-        let digit = x;
-        if (digit < 10) digit = `0${digit}`;
-        return digit;
-      }
-
       function getWndDir(wnd) {
         let wndDir = wnd;
         switch (true) {
@@ -110,19 +103,19 @@
         let data = result.current;
 
         let d = new Date();
-        let h = d.getHours(); h = formatTime(h);
-        let m = d.getMinutes(); m = formatTime(m);
-        let s = d.getSeconds(); s = formatTime(s);
+        let h = d.getHours().toString().padStart(2, 0);
+        let m = d.getMinutes().toString().padStart(2, 0);
+        let s = d.getSeconds().toString().padStart(2, 0);
 
         let gust;
         if (data.wind_gust > 0) { gust = `/${Math.round(data.wind_gust * 1.944)}`; } else gust = '';
 
         const sunrise = new Date(data.sunrise * 1000);
-        const sunriseHour = formatTime(sunrise.getHours());
-        const sunriseMin = formatTime(sunrise.getMinutes());
+        const sunriseHour = sunrise.getHours().toString().padStart(2, 0);
+        const sunriseMin = sunrise.getMinutes().toString().padStart(2, 0);
         const sunset = new Date(data.sunset * 1000);
-        const sunsetHour = formatTime(sunset.getHours());
-        const sunsetMin = formatTime(sunset.getMinutes());
+        const sunsetHour = sunset.getHours().toString().padStart(2, 0);
+        const sunsetMin = sunset.getMinutes().toString().padStart(2, 0);
 
         document.getElementById('current').innerHTML =	`<table><tbody>
           <tr><td colspan="3" style="padding:10px;"><h3>${geolocation}</h3>
