@@ -5,6 +5,7 @@
     <title>5 day forecast</title>
     <meta name="viewport" content="width=device-width">
     <link href="css/owfont-regular.css" rel="stylesheet" type="text/css">
+    <link rel="manifest" href="manifest.json" />
     <style>
         body {
             margin: 0;
@@ -55,11 +56,6 @@
 
 <script>
 "use strict"
-function formatTime(x) {
-    let digit = x;
-    if (digit < 10) digit = `0${digit}`;
-    return digit;
-}
 
 function dayNight(sr, ss, h) {
     let dn;
@@ -121,9 +117,9 @@ function init_widget(result) {
     let sunrise = sunTimes[0].getAttribute('rise');
     let sunset = sunTimes[0].getAttribute('set');
     sunrise = new Date(sunrise);
-	    const sunriseHour = formatTime(sunrise.getHours());
+	    const sunriseHour = sunrise.getHours().toString().padStart(2, 0);
     sunset = new Date(sunset);
-	    const sunsetHour = formatTime(sunset.getHours());
+	    const sunsetHour = sunset.getHours().toString().padStart(2, 0);
 
     for (let i = 1; i < 40; i++) {
         let time = xml.getElementsByTagName('time');
@@ -150,9 +146,8 @@ function init_widget(result) {
 		rain = '0mm';
 		}
 
-        //        var time = time.replace(/\-/ig, '/').replace(/T/, ' ').split('.')[0];// webkit doesn't like the time formatting, so change it
-	     	 time = new Date(time);
-        const ftime = formatTime(time.getHours());
+	     	time = new Date(time);
+        const ftime = time.getHours().toString().padStart(2, 0);
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
         const day = days[time.getDay()];
 
@@ -175,7 +170,7 @@ window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => {
     vars[key] = value;
 });
 
-document.getElementById('location').innerHTML = '5 day 3 hour forecast for ' + decodeURI(vars.geolocation);
+document.getElementById('location').innerHTML = '5 day 3 hour forecast for ' + vars.place;
 
 document.getElementById('forecast').innerHTML = '';
 
