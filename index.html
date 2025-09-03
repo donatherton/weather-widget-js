@@ -5,7 +5,7 @@
     <title>Weather</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json" />
-    <!-- <script src="defaults.js"></script> -->
+    <script src="appid.js"></script>
     <style>
       body, a {
         background-color: #000;
@@ -36,8 +36,6 @@
       <form onsubmit="return searchLocation()">
         <p><label for="loc">Location search </label>
           <input id="loc" type="text" name="loc"></p>
-        <p><label for="appid">Your APPID </label>
-          <input id="appid" type="text" name="appid"></p>
         <p><input type="submit" name="submit" value="OK"></p>
       </form>
       <div id="results"></div>
@@ -45,20 +43,21 @@
 
     <div id="current"></div>
 
+
+    <div id="links" style="position:relative;"></div>
+
     <script src="index.js"></script>
 
-    <div id="links" style="position:relative;">
-
-      <script>
-        if ("serviceWorker" in navigator) {
-          window.addEventListener("load", function() {
-            navigator.serviceWorker
-              .register("./serviceWorker.js")
-              .then(res => console.log("service worker registered"))
-              .catch(err => console.log("service worker not registered", err))
-          })
-        }
-      </script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function() {
+          navigator.serviceWorker
+            .register("./serviceWorker.js")
+            .then(res => console.log("service worker registered"))
+            .catch(err => console.log("service worker not registered", err))
+        })
+      }
+    </script>
 
     </div>
   </body>

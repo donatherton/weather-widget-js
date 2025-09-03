@@ -1,90 +1,87 @@
 "use strict";
 
- "use strict";
+function searchLocation() {
+  const loc = document.getElementById('loc').value;
 
-      function searchLocation() {
-        const loc = document.getElementById('loc').value;
-        const appid = document.getElementById('appid').value;
+  function getLocation(result) {
+    const data = JSON.parse(result);
+    let placeName;
+    document.getElementById('results').innerHTML = '';
+    for (let i = 0; i < data.length; i++) {
+      if ((placeName = data[i].address.city));
+      else if ((placeName = data[i].address.town));
+      else if ((placeName = data[i].address.village));
+      else placeName = data[i].display_name;
+      const placeNames = placeName.split(',');
+      placeName = placeNames[0];
+      document.getElementById('results').innerHTML +=
+        `<p><a href="index.html?lat=${data[i].lat}&lon=${data[i].lon}&place=${placeName}&appid=${appid}">${data[i].display_name}</a></p>`;
+    }
+  }
 
-        function getLocation(result) {
-          const data = JSON.parse(result);
-          let placeName;
-          document.getElementById('results').innerHTML = '';
-          for (let i = 0; i < data.length; i++) {
-            if ((placeName = data[i].address.city));
-            else if ((placeName = data[i].address.town));
-            else if ((placeName = data[i].address.village));
-            else placeName = data[i].display_name;
-            const placeNames = placeName.split(',');
-            placeName = placeNames[0];
-            document.getElementById('results').innerHTML +=
-              `<p><a href="index.html?lat=${data[i].lat}&lon=${data[i].lon}&place=${placeName}&appid=${appid}">${data[i].display_name}</a></p>`;
-          }
-        }
+  // Why is fetch blocked here, when it's not elsewhere?
+  //fetch(`https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&limit=5`)
+  //  .then(response => response.json())
+  //  .then(result => getLocation(result));
 
-        // Why is fetch blocked here, when it's not elsewhere?
-        //fetch(`https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&limit=5`)
-        //  .then(response => response.json())
-        //  .then(result => getLocation(result));
-
-        const xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
-          if (this.readyState === 4 && this.status === 200) {
-            const result = this.responseText;
-            getLocation(result);
-          }
-        };
-        xhttp.open('GET', `https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&format=json&limit=5`, true);
-        xhttp.send();
-        return false;
-      }
+  const xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function () {
+    if (this.readyState === 4 && this.status === 200) {
+      const result = this.responseText;
+      getLocation(result);
+    }
+  };
+  xhttp.open('GET', `https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&format=json&limit=5`, true);
+  xhttp.send();
+  return false;
+}
 
 function getWndDir(wnd) {
-        let wndDir = wnd;
-        switch (true) {
-          case (wndDir <= 11): 	wndDir = 'N'; break;
-          case (wndDir > 11 && wndDir <= 33): wndDir = 'NNE'; break;
-          case (wndDir > 33 && wndDir <= 56): 	wndDir = 'NE'; break;
-          case (wndDir > 56 && wndDir <= 78): wndDir = 'ENE'; break;
-          case (wndDir > 78 && wndDir <= 101): wndDir = 'E'; break;
-          case (wndDir > 101 && wndDir <= 123): wndDir = 'ESE'; break;
-          case (wndDir > 123 && wndDir <= 146): wndDir = 'SE'; break;
-          case (wndDir > 146 && wndDir <= 168): wndDir = 'SSE'; break;
-          case (wndDir > 168 && wndDir <= 190): wndDir = 'S'; break;
-          case (wndDir > 190 && wndDir <= 213): wndDir = 'SSW'; break;
-          case (wndDir > 213 && wndDir <= 235): wndDir = 'SW'; break;
-          case (wndDir > 235 && wndDir <= 258): wndDir = 'WSW'; break;
-          case (wndDir > 258 && wndDir <= 280): wndDir = 'W'; break;
-          case (wndDir > 280 && wndDir <= 303): wndDir = 'WNW'; break;
-          case (wndDir > 303 && wndDir <= 325): wndDir = 'NW'; break;
-          case (wndDir > 325 && wndDir <= 347): wndDir = 'NNW'; break;
-          case (wndDir > 347 && wndDir <= 360): wndDir = 'N';
-        }
-        return wndDir;
-      }
+  let wndDir = wnd;
+  switch (true) {
+    case (wndDir <= 11): 	wndDir = 'N'; break;
+    case (wndDir > 11 && wndDir <= 33): wndDir = 'NNE'; break;
+    case (wndDir > 33 && wndDir <= 56): 	wndDir = 'NE'; break;
+    case (wndDir > 56 && wndDir <= 78): wndDir = 'ENE'; break;
+    case (wndDir > 78 && wndDir <= 101): wndDir = 'E'; break;
+    case (wndDir > 101 && wndDir <= 123): wndDir = 'ESE'; break;
+    case (wndDir > 123 && wndDir <= 146): wndDir = 'SE'; break;
+    case (wndDir > 146 && wndDir <= 168): wndDir = 'SSE'; break;
+    case (wndDir > 168 && wndDir <= 190): wndDir = 'S'; break;
+    case (wndDir > 190 && wndDir <= 213): wndDir = 'SSW'; break;
+    case (wndDir > 213 && wndDir <= 235): wndDir = 'SW'; break;
+    case (wndDir > 235 && wndDir <= 258): wndDir = 'WSW'; break;
+    case (wndDir > 258 && wndDir <= 280): wndDir = 'W'; break;
+    case (wndDir > 280 && wndDir <= 303): wndDir = 'WNW'; break;
+    case (wndDir > 303 && wndDir <= 325): wndDir = 'NW'; break;
+    case (wndDir > 325 && wndDir <= 347): wndDir = 'NNW'; break;
+    case (wndDir > 347 && wndDir <= 360): wndDir = 'N';
+  }
+  return wndDir;
+}
 
-      function initWidget(result) {
-        sessionStorage.setItem("weather_data", JSON.stringify(result));
+function initWidget(result) {
+  sessionStorage.setItem("weather_data", JSON.stringify(result));
 
-        // Does the magic with the data and prints put
-        let data = result.current;
+  // Does the magic with the data and prints put
+  let data = result.current;
 
-        let d = new Date(data.dt * 1000);
-        let h = d.getHours().toString().padStart(2, 0);
-        let m = d.getMinutes().toString().padStart(2, 0);
-        let s = d.getSeconds().toString().padStart(2, 0);
+  let d = new Date(data.dt * 1000);
+  let h = d.getHours().toString().padStart(2, 0);
+  let m = d.getMinutes().toString().padStart(2, 0);
+  let s = d.getSeconds().toString().padStart(2, 0);
 
-        let gust;
-        if (data.wind_gust > 0) { gust = `/${Math.round(data.wind_gust * 1.944)}`; } else gust = '';
+  let gust;
+  if (data.wind_gust > 0) { gust = `/${Math.round(data.wind_gust * 1.944)}`; } else gust = '';
 
-        const sunrise = new Date(data.sunrise * 1000);
-        const sunriseHour = sunrise.getHours().toString().padStart(2, 0);
-        const sunriseMin = sunrise.getMinutes().toString().padStart(2, 0);
-        const sunset = new Date(data.sunset * 1000);
-        const sunsetHour = sunset.getHours().toString().padStart(2, 0);
-        const sunsetMin = sunset.getMinutes().toString().padStart(2, 0);
+  const sunrise = new Date(data.sunrise * 1000);
+  const sunriseHour = sunrise.getHours().toString().padStart(2, 0);
+  const sunriseMin = sunrise.getMinutes().toString().padStart(2, 0);
+  const sunset = new Date(data.sunset * 1000);
+  const sunsetHour = sunset.getHours().toString().padStart(2, 0);
+  const sunsetMin = sunset.getMinutes().toString().padStart(2, 0);
 
-        document.getElementById('current').innerHTML =	`<table><tbody>
+  document.getElementById('current').innerHTML =	`<table><tbody>
       <tr><td colspan="3" style="padding:10px;"><h3>${place}</h3>
       <h3>${data.temp.toFixed(1)}&deg;C</h3>
       <p style="font-variant:small-caps;">${data.weather[0].description}<br>
@@ -96,31 +93,31 @@ function getWndDir(wnd) {
       <p>Updated: ${h}:${m}:${s}</p></td></tr>
       <tr id="forecast">`;
 
-        // 7 day forecast;
-        data = result.daily;
+  // 7 day forecast;
+  data = result.daily;
 
-        document.getElementById('forecast').innerHTML = '';
+  document.getElementById('forecast').innerHTML = '';
 
-        for (let i = 0; i < 5; i++) {
-          d = new Date(data[i].dt * 1000);
-          d = d.getDay();
-          switch (d) {
-            case 0: d = 'Sun'; break;
-            case 1: d = 'Mon'; break;
-            case 2: d = 'Tue'; break;
-            case 3: d = 'Wed'; break;
-            case 4: d = 'Thu'; break;
-            case 5: d = 'Fri'; break;
-            case 6: d = 'Sat';
-          }
-          let rain;
-          if (data[i].rain) {
-            rain = data[i].rain.toFixed(1);
-          } else rain = '0';
-          if (data[i].wind_gust > 0) { gust = `/${Math.round(data[i].wind_gust * 1.944)}`; } else gust = '';
+  for (let i = 0; i < 5; i++) {
+    d = new Date(data[i].dt * 1000);
+    d = d.getDay();
+    switch (d) {
+      case 0: d = 'Sun'; break;
+      case 1: d = 'Mon'; break;
+      case 2: d = 'Tue'; break;
+      case 3: d = 'Wed'; break;
+      case 4: d = 'Thu'; break;
+      case 5: d = 'Fri'; break;
+      case 6: d = 'Sat';
+    }
+    let rain;
+    if (data[i].rain) {
+      rain = data[i].rain.toFixed(1);
+    } else rain = '0';
+    if (data[i].wind_gust > 0) { gust = `/${Math.round(data[i].wind_gust * 1.944)}`; } else gust = '';
 
-          document.getElementById('forecast').innerHTML
-            += `<td><table><tr><td>${d}</td></tr><tr><td title="Min/max temp">${Math.round(data[i].temp.max)}/${Math.round(data[i].temp.min)}&deg;C</td></tr>
+    document.getElementById('forecast').innerHTML
+      += `<td><table><tr><td>${d}</td></tr><tr><td title="Min/max temp">${Math.round(data[i].temp.max)}/${Math.round(data[i].temp.min)}&deg;C</td></tr>
         <tr><td title="${data[i].weather[0].description.toUpperCase()}">
         <img src="PNG/${data[i].weather[0].icon}.png" width="30" height="30" alt="${data[i].weather[0].description}"></td></tr>
         <tr><td title="Wind speed/gust">${Math.round(data[i].wind_speed * 1.944)}${gust}kt</td></tr>
@@ -129,31 +126,34 @@ function getWndDir(wnd) {
         <tr><td title="Amount of rain">${rain}mm</td></tr>
         <tr><td title="Pressure">${Math.round(data[i].pressure)}mb</td></tr>
         </table>`;
-        }
-        document.getElementById('current').innerHTML += '</td></tr></tbody></table></div>';
+  }
+  document.getElementById('current').innerHTML += '</td></tr></tbody></table></div>';
 
-        document.getElementById('links').innerHTML =
-          `<p><a href='hourly.html?place=${place}'>Hourly 48h</a>
+  document.getElementById('links').innerHTML =
+    `<p><a href='hourly.html?place=${place}'>Hourly 48h</a>
        <a href="5-days.html?lat=${lat}&lon=${lon}&place=${place}&appid=${appid}">3 hourly 5 days</a>
        <a href="radar.html?lat=${lat}&lon=${lon}">Rainfall radar</a></p>`
-      }
+}
 
-      let vars = JSON.parse(localStorage.getItem('vars'));
+let vars = JSON.parse(localStorage.getItem('vars'));
 
-      if (!vars) {
-        vars = {};
-        window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => {
-         vars[key] = value;
-        });
-        localStorage.setItem('vars', JSON.stringify(vars));
-      }
- 
-       const { lat } = vars;
-       const { lon } = vars;
-       const { place } = vars;
-       const { appid } = vars;
+if (!vars) {
+  vars = {};
+  window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => {
+    vars[key] = value;
+  });
+  if (Object.keys(vars).length) {
+    localStorage.setItem('vars', JSON.stringify(vars));
+  }
+}
 
-      //Send request for data
-      fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${appid}`)
-        .then(response => response.json())
-        .then(result => initWidget(result));
+const { lat } = vars;
+const { lon } = vars;
+const { place } = vars;
+
+//Send request for data
+if (lat && lon && appid) {
+  fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${appid}`)
+  .then(response => response.json())
+  .then(result => initWidget(result));
+}
