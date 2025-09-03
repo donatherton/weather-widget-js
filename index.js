@@ -1,4 +1,44 @@
 "use strict";
+
+ "use strict";
+
+      function searchLocation() {
+        const loc = document.getElementById('loc').value;
+        const appid = document.getElementById('appid').value;
+
+        function getLocation(result) {
+          const data = JSON.parse(result);
+          let placeName;
+          document.getElementById('results').innerHTML = '';
+          for (let i = 0; i < data.length; i++) {
+            if ((placeName = data[i].address.city));
+            else if ((placeName = data[i].address.town));
+            else if ((placeName = data[i].address.village));
+            else placeName = data[i].display_name;
+            const placeNames = placeName.split(',');
+            placeName = placeNames[0];
+            document.getElementById('results').innerHTML +=
+              `<p><a href="index.html?lat=${data[i].lat}&lon=${data[i].lon}&place=${placeName}&appid=${appid}">${data[i].display_name}</a></p>`;
+          }
+        }
+
+        // Why is fetch blocked here, when it's not elsewhere?
+        //fetch(`https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&limit=5`)
+        //  .then(response => response.json())
+        //  .then(result => getLocation(result));
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+          if (this.readyState === 4 && this.status === 200) {
+            const result = this.responseText;
+            getLocation(result);
+          }
+        };
+        xhttp.open('GET', `https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&format=json&limit=5`, true);
+        xhttp.send();
+        return false;
+      }
+
 function getWndDir(wnd) {
         let wndDir = wnd;
         switch (true) {
@@ -98,27 +138,22 @@ function getWndDir(wnd) {
        <a href="radar.html?lat=${lat}&lon=${lon}">Rainfall radar</a></p>`
       }
 
+      let vars = JSON.parse(localStorage.getItem('vars'));
 
-       const vars = {};
-       window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => {
+      if (!vars) {
+        vars = {};
+        window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => {
          vars[key] = value;
-       });
-
-       // Make sure url is complete with data
-       if (Object.keys(vars).length < 4) {
-         alert("Need a lat, lon, place, appid");
-         throw new Error("Abort Script");
-       }
-
+        });
+        localStorage.setItem('vars', JSON.stringify(vars));
+      }
+ 
        const { lat } = vars;
        const { lon } = vars;
        const { place } = vars;
        const { appid } = vars;
 
       //Send request for data
-      //function fetchData() {
       fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${appid}`)
         .then(response => response.json())
         .then(result => initWidget(result));
-      //}
-

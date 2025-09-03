@@ -2,8 +2,11 @@ const ASSET_CACHE = 'weather-v1';
 const assets = [
   "/",
   "/index.html",
+  "/index.js",
   "/hourly.html",
+  "/hourly.js",
   "/5-days.html",
+  "/5-days.js",
   "/leaflet.js",
   "/leaflet.css",
   "/radar.html",
