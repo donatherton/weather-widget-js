@@ -178,22 +178,17 @@
 						dnColour = 'style="background-color:#ddd"';
 					}
 
-					document.getElementById('forecast').innerHTML
-						+= `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
-		<td style="padding-right:3px;color:${tempColour(temp)}"><strong>${temp}&deg;C</strong></td>
-		<td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
-		<td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
-		<td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wndSpdColour(wndSpd)}">
+					document.getElementById('forecast').innerHTML +=
+					`<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
+					<td style="padding-right:3px;color:${tempColour(temp)}"><strong>${temp}&deg;C</strong></td>
+					<td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
+					<td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
+					<td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wndSpdColour(wndSpd)}">
 		${wndSpd}${gust}kt</td><td>${get_wnd_dir(wndDir)}</td><td>${pres}mb</td></tr>`;
 				}
 			}
 
-			const vars = {};
-			window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => {
-				vars[key] = value;
-			});
-
-			const { place } = vars;
+			const place = JSON.parse(localStorage.getItem('vars')).place;
 
 			document.getElementById('location').innerHTML = `48 hour forecast for ${place}`;
 

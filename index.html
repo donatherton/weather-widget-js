@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Weather</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width">
     <link rel="manifest" href="manifest.json" />
     <script src="appid.js"></script>
     <style>
@@ -181,20 +181,20 @@
 
           document.getElementById('forecast').innerHTML
             += `<td><table><tr><td>${d}</td></tr><tr><td title="Min/max temp">${Math.round(data[i].temp.max)}/${Math.round(data[i].temp.min)}&deg;C</td></tr>
-        <tr><td title="${data[i].weather[0].description.toUpperCase()}">
-        <img src="PNG/${data[i].weather[0].icon}.png" width="30" height="30" alt="${data[i].weather[0].description}"></td></tr>
-        <tr><td title="Wind speed/gust">${Math.round(data[i].wind_speed * 1.944)}${gust}kt</td></tr>
-        <tr><td title="Wind direction">${getWndDir(data[i].wind_deg)}</td></tr>
-        <tr><td title="Chance of rain">${Math.round(data[i].pop * 100)}&percnt;</td></tr>
-        <tr><td title="Amount of rain">${rain}mm</td></tr>
-        <tr><td title="Pressure">${Math.round(data[i].pressure)}mb</td></tr>
-        </table>`;
+            <tr><td title="${data[i].weather[0].description.toUpperCase()}">
+            <img src="PNG/${data[i].weather[0].icon}.png" width="30" height="30" alt="${data[i].weather[0].description}"></td></tr>
+            <tr><td title="Wind speed/gust">${Math.round(data[i].wind_speed * 1.944)}${gust}kt</td></tr>
+            <tr><td title="Wind direction">${getWndDir(data[i].wind_deg)}</td></tr>
+            <tr><td title="Chance of rain">${Math.round(data[i].pop * 100)}&percnt;</td></tr>
+            <tr><td title="Amount of rain">${rain}mm</td></tr>
+            <tr><td title="Pressure">${Math.round(data[i].pressure)}mb</td></tr>
+            </table>`;
         }
         document.getElementById('current').innerHTML += '</td></tr></tbody></table></div>';
 
         document.getElementById('links').innerHTML =
-          `<p><a href='hourly.html?place=${place}'>Hourly 48h</a>
-       <a href="5-days.html?lat=${lat}&lon=${lon}&place=${place}&appid=${appid}">3 hourly 5 days</a>
+          `<p><a href='hourly.html'>Hourly 48h</a>
+       <a href="5-days.html?lat=${lat}&lon=${lon}&place=${place}">3 hourly 5 days</a>
        <a href="radar.html?lat=${lat}&lon=${lon}">Rainfall radar</a></p>`
       }
       
@@ -237,7 +237,7 @@
         });
       }
     </script>
-
+    <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>
     </div>
   </body>
 </html>
