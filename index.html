@@ -37,7 +37,7 @@
 
   <body>
     <div id="location">
-      <form onsubmit="return searchLocation()">
+      <form id="searchForm">
         <p><label for="loc">Location search </label>
           <input id="loc" type="text" name="loc"></p>
         <p><input type="submit" name="submit" value="OK"></p>
@@ -47,17 +47,19 @@
 
     <div id="current"></div>
 
-
     <div id="links" style="position:relative;"></div>
 
     <script>
       "use strict";
 
-      function searchLocation() {
+      document.getElementById('searchForm').addEventListener('submit', searchLocation);
+
+      function searchLocation(e) {
+        e.preventDefault(); // Needed to stop calling new html doc on submit which cancels fetch
         const loc = document.getElementById('loc').value;
 
         function getLocation(result) {
-          const data = JSON.parse(result);
+          const data = result;
           let placeName;
           document.getElementById('results').innerHTML = '';
           for (let i = 0; i < data.length; i++) {
@@ -72,31 +74,9 @@
               `<p><a href="index.html?lat=${data[i].lat}&lon=${data[i].lon}&place=${placeName}">${data[i].display_name}</a></p>`;
           }
         }
-
-        // Why is fetch blocked here, when it's not elsewhere?
-        //(async () => {
-        //  try {
-        //    const response = await fetch(`https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&limit=5`);
-        //    if (!response.ok) {
-        //      throw new Error(`Response status: ${response.status}`);
-        //    }
-        //    const result = await response.json();
-        //    getLocation(result);
-        //  } catch (error) {
-        //    console.error(error.message);
-        //  }
-        //})()
-
-        const xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
-          if (this.readyState === 4 && this.status === 200) {
-            const result = this.responseText;
-            getLocation(result);
-          }
-        };
-        xhttp.open('GET', `https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&format=json&limit=5`, true);
-        xhttp.send();
-        return false;
+          fetch(`https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&limit=5`)
+            .then(response => response.json())
+            .then(result => getLocation(result));           
       }
 
       function getWndDir(wnd) {
@@ -182,7 +162,7 @@
           document.getElementById('forecast').innerHTML
             += `<td><table><tr><td>${d}</td></tr><tr><td title="Min/max temp">${Math.round(data[i].temp.max)}/${Math.round(data[i].temp.min)}&deg;C</td></tr>
             <tr><td title="${data[i].weather[0].description.toUpperCase()}">
-            <img src="PNG/${data[i].weather[0].icon}.png" width="30" height="30" alt="${data[i].weather[0].description}"></td></tr>
+            <img src="PNG/${data[i].weather[0].icon}.png" width="30" height="30" alt="${data[i].weather[0].description}" title="${data[i].weather[0].description}"></td></tr>
             <tr><td title="Wind speed/gust">${Math.round(data[i].wind_speed * 1.944)}${gust}kt</td></tr>
             <tr><td title="Wind direction">${getWndDir(data[i].wind_deg)}</td></tr>
             <tr><td title="Chance of rain">${Math.round(data[i].pop * 100)}&percnt;</td></tr>
@@ -202,7 +182,6 @@
       let vars = JSON.parse(localStorage.getItem('vars')) || {};
       // If url has parameters (after search) change to those
       window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => vars[key] = decodeURI(value));
-      // If url had no parameters vars length will be 0 so no change
 
       const { lat } = vars;
       const { lon } = vars;
@@ -214,18 +193,9 @@
       
       //Send request for data
       if (lat && lon && appid) {
-        (async () => {
-          try {
-            const response = await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${appid}`);
-            if (!response.ok) {
-              throw new Error(`Response status: ${response.status}`);
-            }
-            const result = await response.json();
-            initWidget(result);
-          } catch (error) {
-            console.error(error.message);
-          }
-        })()
+        fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${appid}`)
+          .then(response => response.json())
+          .then(result => initWidget(result));
       }
 
       if ("serviceWorker" in navigator) {
