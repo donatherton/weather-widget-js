@@ -133,21 +133,11 @@ document.getElementById('search').innerHTML =
    <div id="results"></div>`;
 
 function getLocation(result) {
-  const data = result;
-  let placeName;
-
   document.getElementById('results').innerHTML = '';
 
-  for (let i = 0; i < data.length; i++) {
-    if ((placeName = data[i].address.city));
-    else if ((placeName = data[i].address.town));
-    else if ((placeName = data[i].address.village));
-    else placeName = data[i].display_name;
-    const placeNames = placeName.split(',');
-    placeName = placeNames[0];
-
+  for (let i = 0; i < result.length; i++) {
     document.getElementById('results').innerHTML +=
-      `<p><a href="index.html?lat=${data[i].lat}&lon=${data[i].lon}&place=${placeName}">${data[i].display_name}</a></p>`;
+      `<p><a href="index.html?lat=${result[i].lat}&lon=${result[i].lon}&place=${result[i].name}">${result[i].name}, ${result[i].state}, ${result[i].country}</a></p>`;
   }
 }
 
@@ -157,14 +147,19 @@ function searchLocation(e) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort('Network error'), 5000);
   
-  fetch(`https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&limit=5`,
+  if (loc && appid) {
+  fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${appid}`,
     { signal: controller.signal })
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Network response not ok: ${response.statusText}`);
+      }
+      return response.json();
+    })
     .then(result => getLocation(result))
     .catch(err => alert(`Error: ${err}`))
+  }
 }
-
-
 
 document.getElementById('searchForm').addEventListener('submit', searchLocation);
 
