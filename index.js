@@ -1,7 +1,5 @@
 "use strict";
 
-document.getElementById('searchForm').addEventListener('submit', searchLocation);
-
 function getLocation(result) {
   const data = result;
   let placeName;
@@ -65,8 +63,6 @@ function initWidget(result) {
     return gust;
   }
 
-  sessionStorage.setItem("weather_data", JSON.stringify(result));
-
   let data = result.current;
 
   let d = new Date(data.dt * 1000);
@@ -91,17 +87,18 @@ function initWidget(result) {
   const sunsetMin = sunset.getMinutes().toString().padStart(2, 0);
 
   document.getElementById('container').innerHTML =
-    `<table><tbody>
-          <tr><td colspan="3" style="padding:10px;"><h3>${place}</h3>
-          <h3>${temp}&deg;C</h3>
-          <p style="font-variant:small-caps;">${desc}<br>
-          <img src="PNG/${icon}.png" width="60" height="60" alt="${desc}"></p></td>
-          <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}kt ${windDir}<br>
-          Pressure: ${pres}mb<br>
-          Humidity: ${hum}&percnt;</p>
-          <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
-          <p>Updated: ${h}:${m}:${s}</p></td></tr>
-          <tr id="forecast">`;
+   `<table><tbody>
+    <tr><td colspan="3" style="padding:10px;"><h3>${place}</h3>
+    <h3>${temp}&deg;C</h3>
+    <p style="font-variant:small-caps;">${desc}<br>
+    <img src="PNG/${icon}.png" width="60" height="60" alt="${desc}"></p></td>
+    <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}kt ${windDir}<br>
+    Pressure: ${pres}mb<br>
+    Humidity: ${hum}&percnt;</p>
+    <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
+    <p>Updated: ${h}:${m}:${s}</p></td></tr>
+    <tr id="forecast">`;
+document.getElementById('searchForm').addEventListener('submit', searchLocation);
 
   // 7 day forecast;
   data = result.daily;
@@ -135,20 +132,20 @@ function initWidget(result) {
     const dailyPOP = Math.round(data[i].pop * 100);
     const dailyPres = Math.round(data[i].pressure);
 
-    document.getElementById('forecast').innerHTML +=
-      `<td><table><tr><td>${d}</td></tr>
-            <tr><td title="Min/max temp">${tempMax}/${tempMin}&deg;C</td></tr>
-            <tr><td title="${dailyDesc}">
-            <img src="PNG/${dailyIcon}.png"
-            width="30" height="30"
-            alt="${dailyDesc}"
-            title="${dailyDesc}"></td></tr>
-            <tr><td title="Wind speed/gust">${dailyWindSpd}${dailyGust}kt</td></tr>
-            <tr><td title="Wind direction">${dailyWindDir}</td></tr>
-            <tr><td title="Chance of rain">${dailyPOP}&percnt;</td></tr>
-            <tr><td title="Amount of rain">${rain}mm</td></tr>
-            <tr><td title="Pressure">${dailyPres}mb</td></tr>
-            </table>`;
+  document.getElementById('forecast').innerHTML +=
+    `<td><table><tr><td>${d}</td></tr>
+    <tr><td title="Min/max temp">${tempMax}/${tempMin}&deg;C</td></tr>
+    <tr><td title="${dailyDesc}">
+    <img src="PNG/${dailyIcon}.png"
+    width="30" height="30"
+    alt="${dailyDesc}"
+    title="${dailyDesc}"></td></tr>
+    <tr><td title="Wind speed/gust">${dailyWindSpd}${dailyGust}kt</td></tr>
+    <tr><td title="Wind direction">${dailyWindDir}</td></tr>
+    <tr><td title="Chance of rain">${dailyPOP}&percnt;</td></tr>
+    <tr><td title="Amount of rain">${rain}mm</td></tr>
+    <tr><td title="Pressure">${dailyPres}mb</td></tr>
+    </table>`;
   }
   document.getElementById('container').innerHTML += '</td></tr></tbody></table></div>';
 
@@ -157,6 +154,17 @@ function initWidget(result) {
        <a href="5-days.html?lat=${lat}&lon=${lon}&place=${place}">3 hourly 5 days</a>
        <a href="radar.html?lat=${lat}&lon=${lon}">Rainfall radar</a></p>`
 }
+
+
+document.getElementById('search').innerHTML = 
+  `<form id="searchForm">
+      <p><label for="loc">Location search </label>
+        <input id="loc" type="text" name="loc"></p>
+      <p><input type="submit" name="submit" value="OK"></p>
+   </form>
+   <div id="results"></div>`
+
+document.getElementById('searchForm').addEventListener('submit', searchLocation);
 
 // Get location from local storage if it's there, empty object if not
 const vars = JSON.parse(localStorage.getItem('vars')) || {};
@@ -183,6 +191,9 @@ if (lat && lon && appid) {
       }
       return response.json();
     })
-    .then(result => initWidget(result))
+    .then(result => {
+      sessionStorage.setItem("weather_data", JSON.stringify(result));
+      initWidget(result)
+    })
     .catch(err => alert(`Error: ${err}`))
 }

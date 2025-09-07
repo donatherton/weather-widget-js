@@ -39,20 +39,9 @@
   </head>
 
   <body>
-    <div id="location">
-      <form id="searchForm">
-        <p><label for="loc">Location search </label>
-          <input id="loc" type="text" name="loc"></p>
-        <p><input type="submit" name="submit" value="OK"></p>
-      </form>
-      <div id="results"></div>
-    </div>
-
+    <div id="search"></div>
     <div id="container"></div>
-
     <div id="links" style="position:relative;"></div>
-
-    <script src="index.js"></script>
 
     <script>  
       if ("serviceWorker" in navigator) {
@@ -63,7 +52,9 @@
         });
       }
     </script>
+
     <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>
     </div>
+    <script src="index.js"></script>
   </body>
 </html>

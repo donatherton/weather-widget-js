@@ -139,33 +139,44 @@ const { lat } = vars;
 const { lon } = vars;
 const { place } = vars;
 
-document.getElementById('location').innerHTML = '5 day 3 hour forecast for ' + place;
+//const place = JSON.parse(localStorage.getItem('vars')).place;
+
+document.getElementById('container').innerHTML = 
+	`<table>
+			<thead>
+				<tr><td colspan="3"><button class="back_button" onclick="history.back()">Go back</button></td>
+					<td colspan="6"><h3>5 day forecast for ${place}</h3></td></tr>
+				<tr>
+					<td></td>
+					<td>Temp</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>Rain</td>
+					<td>Cloud</td>
+					<td>Wind</td>
+					<td>Dir</td>
+					<td>Pres</td>
+				</tr>
+			</thead>
+			<tbody id="forecast">`;
+
+document.getElementById('container').innerHTML += 
+		 `</tbody>
+	 </table>`
 
 document.getElementById('forecast').innerHTML = '';
 
-//Send request for data
 if (lat && lon && appid) {
-	(async () => {
-		try {
-			const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${appid}`);
-			if (!response.ok) {
-				throw new Error(`Response status: ${response.status}`);
-			}
-			const result = await response.json();
-			initWidget(result);
-		} catch (error) {
-			console.error(error.message);
-		}
-	})()
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort('Network error'), 5000);
+  fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${appid}`,
+    { signal: controller.signal })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Network response not ok: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then(result => initWidget(result))
+    .catch(err => alert(`Error: ${err}`))
 }
-//const xhttp = new XMLHttpRequest();
-//xhttp.onreadystatechange = function () {
-//    if (this.readyState === 4 && this.status === 200) {
-//        const result = this.responseText;
-//        init_widget(result);
-//    }
-//};
-//xhttp.open('GET', `https://api.openweathermap.org/data/2.5/forecast?lat=${vars.lat}&lon=${vars.lon}
-//&appid=${vars.appid}&mode=xml`, true);
-//xhttp.send();
-

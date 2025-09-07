@@ -134,7 +134,28 @@ function initWidget(result) {
 
 const place = JSON.parse(localStorage.getItem('vars')).place;
 
-document.getElementById('location').innerHTML = `48 hour forecast for ${place}`;
+document.getElementById('container').innerHTML = 
+	`<table>
+			<thead>
+				<tr><td colspan="3"><button class="back_button" onclick="history.back()">Go back</button></td>
+					<td colspan="6"><h3>48 hour forecast for ${place}</h3></td></tr>
+				<tr>
+					<td></td>
+					<td>Temp</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>Rain</td>
+					<td>Cloud</td>
+					<td>Wind</td>
+					<td>Dir</td>
+					<td>Pres</td>
+				</tr>
+			</thead>
+			<tbody id="forecast">`;
+
+document.getElementById('container').innerHTML += 
+		 `</tbody>
+	 </table>`
 
 initWidget(sessionStorage.getItem('weather_data'));
 
