@@ -1,37 +1,5 @@
 "use strict";
 
-function getLocation(result) {
-  const data = result;
-  let placeName;
-
-  document.getElementById('results').innerHTML = '';
-
-  for (let i = 0; i < data.length; i++) {
-    if ((placeName = data[i].address.city));
-    else if ((placeName = data[i].address.town));
-    else if ((placeName = data[i].address.village));
-    else placeName = data[i].display_name;
-    const placeNames = placeName.split(',');
-    placeName = placeNames[0];
-
-    document.getElementById('results').innerHTML +=
-      `<p><a href="index.html?lat=${data[i].lat}&lon=${data[i].lon}&place=${placeName}">${data[i].display_name}</a></p>`;
-  }
-}
-
-function searchLocation(e) {
-  e.preventDefault(); // Needed to stop calling new html doc on submit which cancels fetch
-  const loc = document.getElementById('loc').value;
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort('Network error'), 5000);
-  
-  fetch(`https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&limit=5`,
-    { signal: controller.signal })
-    .then(response => response.json())
-    .then(result => getLocation(result))
-    .catch(err => alert(`Error: ${err}`))
-}
-
 function getWndDir(wnd) {
   let wndDir = wnd;
   switch (true) {
@@ -162,7 +130,41 @@ document.getElementById('search').innerHTML =
         <input id="loc" type="text" name="loc"></p>
       <p><input type="submit" name="submit" value="OK"></p>
    </form>
-   <div id="results"></div>`
+   <div id="results"></div>`;
+
+function getLocation(result) {
+  const data = result;
+  let placeName;
+
+  document.getElementById('results').innerHTML = '';
+
+  for (let i = 0; i < data.length; i++) {
+    if ((placeName = data[i].address.city));
+    else if ((placeName = data[i].address.town));
+    else if ((placeName = data[i].address.village));
+    else placeName = data[i].display_name;
+    const placeNames = placeName.split(',');
+    placeName = placeNames[0];
+
+    document.getElementById('results').innerHTML +=
+      `<p><a href="index.html?lat=${data[i].lat}&lon=${data[i].lon}&place=${placeName}">${data[i].display_name}</a></p>`;
+  }
+}
+
+function searchLocation(e) {
+  e.preventDefault(); // Needed to stop calling new html doc on submit which cancels fetch
+  const loc = document.getElementById('loc').value;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort('Network error'), 5000);
+  
+  fetch(`https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${loc}&limit=5`,
+    { signal: controller.signal })
+    .then(response => response.json())
+    .then(result => getLocation(result))
+    .catch(err => alert(`Error: ${err}`))
+}
+
+
 
 document.getElementById('searchForm').addEventListener('submit', searchLocation);
 

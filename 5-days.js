@@ -139,8 +139,6 @@ const { lat } = vars;
 const { lon } = vars;
 const { place } = vars;
 
-//const place = JSON.parse(localStorage.getItem('vars')).place;
-
 document.getElementById('container').innerHTML = 
 	`<table>
 			<thead>
@@ -163,8 +161,6 @@ document.getElementById('container').innerHTML =
 document.getElementById('container').innerHTML += 
 		 `</tbody>
 	 </table>`
-
-document.getElementById('forecast').innerHTML = '';
 
 if (lat && lon && appid) {
   const controller = new AbortController();
