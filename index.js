@@ -3,9 +3,9 @@
 function getWndDir(wnd) {
   let wndDir = wnd;
   switch (true) {
-    case (wndDir <= 11): 	wndDir = 'N'; break;
+    case (wndDir <= 11):   wndDir = 'N'; break;
     case (wndDir > 11 && wndDir <= 33): wndDir = 'NNE'; break;
-    case (wndDir > 33 && wndDir <= 56): 	wndDir = 'NE'; break;
+    case (wndDir > 33 && wndDir <= 56):   wndDir = 'NE'; break;
     case (wndDir > 56 && wndDir <= 78): wndDir = 'ENE'; break;
     case (wndDir > 78 && wndDir <= 101): wndDir = 'E'; break;
     case (wndDir > 101 && wndDir <= 123): wndDir = 'ESE'; break;
@@ -24,13 +24,33 @@ function getWndDir(wnd) {
   return wndDir;
 }
 
-function initWidget(result) {
+function initWidget() {
 
   function calcGust(gust) {
     if (gust > 0) { gust = `/${Math.round(gust * 1.944)}`; } else gust = '';
     return gust;
   }
 
+  let unit;
+  let Cchecked = 'checked';
+  let Fchecked;
+  const units = localStorage.getItem('units');
+  units === 'F' ? unit = units : unit = 'C';
+
+  function setUnits(t) {
+    let temp;
+    if (unit === 'F') {
+      temp = ((t * 1.8) + 32);
+      Fchecked = 'checked';
+    }
+    else {
+      temp = t;
+      Cchecked = 'checked';
+    }
+    return temp;
+  }
+
+  let result = JSON.parse(sessionStorage.getItem('weather_data'));
   let data = result.current;
 
   let d = new Date(data.dt * 1000);
@@ -38,7 +58,7 @@ function initWidget(result) {
   const m = d.getMinutes().toString().padStart(2, 0);
   const s = d.getSeconds().toString().padStart(2, 0);
 
-  const temp = data.temp.toFixed(1);
+  const temp = setUnits(data.temp).toFixed(1);
   const desc = data.weather[0].description;
   const icon = data.weather[0].icon;
   const windSpd = Math.round(data.wind_speed * 1.944);
@@ -57,7 +77,7 @@ function initWidget(result) {
   document.getElementById('container').innerHTML =
    `<table><tbody>
     <tr><td colspan="3" style="padding:10px;"><h3>${place}</h3>
-    <h3>${temp}&deg;C</h3>
+    <h3>${temp}&deg;${unit}</h3>
     <p style="font-variant:small-caps;">${desc}<br>
     <img src="PNG/${icon}.png" width="60" height="60" alt="${desc}"></p></td>
     <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}kt ${windDir}<br>
@@ -86,8 +106,8 @@ document.getElementById('searchForm').addEventListener('submit', searchLocation)
       case 6: d = 'Sat';
     }
 
-    const tempMax = Math.round(data[i].temp.max);
-    const tempMin = Math.round(data[i].temp.min);
+    const tempMax = setUnits(data[i].temp.max).toFixed(0);
+    const tempMin = setUnits(data[i].temp.min).toFixed(0);
     const dailyDesc = data[i].weather[0].description.toUpperCase();
     const dailyIcon = data[i].weather[0].icon;
     const dailyWindSpd = Math.round(data[i].wind_speed * 1.944);
@@ -97,12 +117,12 @@ document.getElementById('searchForm').addEventListener('submit', searchLocation)
     if (data[i].rain) {
       rain = data[i].rain.toFixed(1);
     } else rain = '0';
-    const dailyPOP = Math.round(data[i].pop * 100);
+    const POP = Math.round(data[i].pop * 100);
     const dailyPres = Math.round(data[i].pressure);
 
   document.getElementById('forecast').innerHTML +=
-    `<td><table><tr><td>${d}</td></tr>
-    <tr><td title="Min/max temp">${tempMax}/${tempMin}&deg;C</td></tr>
+   `<td><table><tr><td>${d}</td></tr>
+    <tr><td title="Min/max temp">${tempMax}/${tempMin}&deg;${unit}</td></tr>
     <tr><td title="${dailyDesc}">
     <img src="PNG/${dailyIcon}.png"
     width="30" height="30"
@@ -110,19 +130,21 @@ document.getElementById('searchForm').addEventListener('submit', searchLocation)
     title="${dailyDesc}"></td></tr>
     <tr><td title="Wind speed/gust">${dailyWindSpd}${dailyGust}kt</td></tr>
     <tr><td title="Wind direction">${dailyWindDir}</td></tr>
-    <tr><td title="Chance of rain">${dailyPOP}&percnt;</td></tr>
+    <tr><td title="Chance of rain">${POP}&percnt;</td></tr>
     <tr><td title="Amount of rain">${rain}mm</td></tr>
     <tr><td title="Pressure">${dailyPres}mb</td></tr>
     </table>`;
   }
   document.getElementById('container').innerHTML += '</td></tr></tbody></table></div>';
 
-  document.getElementById('links').innerHTML =
+  document.getElementById('footer').innerHTML =
     `<p><a href='hourly.html'>Hourly 48h</a>
        <a href="5-days.html?lat=${lat}&lon=${lon}&place=${place}">3 hourly 5 days</a>
-       <a href="radar.html?lat=${lat}&lon=${lon}">Rainfall radar</a></p>`
+       <a href="radar.html?lat=${lat}&lon=${lon}">Rainfall radar</a></p>
+       <label><input type="radio" name="units" value="C" ${Cchecked} onchange="getUnits()">Celsius</label>
+       <label><input type="radio" name="units" value="F" ${Fchecked} onchange="getUnits()">Fahrenheit</label>       
+     <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>`;
 }
-
 
 document.getElementById('search').innerHTML = 
   `<form id="searchForm">
@@ -134,18 +156,29 @@ document.getElementById('search').innerHTML =
 
 function getLocation(result) {
   document.getElementById('results').innerHTML = '';
+  
+  if (result.length > 0) {
+    for (let i = 0; i < result.length; i++) {
+      document.getElementById('results').innerHTML +=
+        `<p><a href="index.html?lat=${result[i].lat}&lon=${result[i].lon}&place=${result[i].name}">${result[i].name}, ${result[i].state}, ${result[i].country}</a></p>`;
+    }
+  } else document.getElementById('results').innerHTML = '<p>No results</p>';
+}
 
-  for (let i = 0; i < result.length; i++) {
-    document.getElementById('results').innerHTML +=
-      `<p><a href="index.html?lat=${result[i].lat}&lon=${result[i].lon}&place=${result[i].name}">${result[i].name}, ${result[i].state}, ${result[i].country}</a></p>`;
-  }
+function getUnits() {
+  const units = document.getElementsByName('units');
+  units.forEach(unit => {
+    if (unit.checked) localStorage.setItem('units', unit.value);
+    });
+  initWidget();
 }
 
 function searchLocation(e) {
   e.preventDefault(); // Needed to stop calling new html doc on submit which cancels fetch
+
   const loc = document.getElementById('loc').value;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort('Network error'), 5000);
+  setTimeout(() => controller.abort('Network error'), 5000);
   
   if (loc && appid) {
   fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${appid}`,
@@ -179,7 +212,7 @@ if (lat && lon && place) {
 //Send request for data
 if (lat && lon && appid) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort('Network error'), 5000);
+  setTimeout(() => controller.abort('Network error'), 5000);
   fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${appid}`,
     { signal: controller.signal })
     .then(response => {
@@ -190,7 +223,7 @@ if (lat && lon && appid) {
     })
     .then(result => {
       sessionStorage.setItem("weather_data", JSON.stringify(result));
-      initWidget(result)
+      initWidget()
     })
     .catch(err => alert(`Error: ${err}`))
 }

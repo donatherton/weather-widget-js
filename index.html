@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <title>Weather</title>
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
     <script src="appid.js"></script>
     <style>
@@ -15,9 +15,6 @@
         color: #fff;
         font-size: 90%;
         font-family: sans-serif;line-height: 1.5em;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
       }
       table {
         border-spacing: 0;
@@ -25,7 +22,7 @@
       td {
         padding: 0 5px;
       }
-      #links p {
+      #footer p {
         display: flex;
         flex-wrap: nowrap;
         flex-direction: row;
@@ -41,7 +38,7 @@
   <body>
     <div id="search"></div>
     <div id="container"></div>
-    <div id="links" style="position:relative;"></div>
+    <div id="footer" style="position:relative;"></div>
 
     <script>  
       if ("serviceWorker" in navigator) {
@@ -53,7 +50,7 @@
       }
     </script>
 
-    <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>
+    
     </div>
     <script src="index.js"></script>
   </body>
