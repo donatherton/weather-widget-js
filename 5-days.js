@@ -130,10 +130,7 @@ function initWidget(data) {
   }
 }
 
-const vars = {};
-window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => {
-  vars[key] = value;
-});
+const vars = JSON.parse(localStorage.getItem('vars'));
 
 const { lat } = vars;
 const { lon } = vars;

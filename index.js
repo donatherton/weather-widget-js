@@ -26,28 +26,32 @@ function getWndDir(wnd) {
 
 function initWidget() {
 
-  function calcGust(gust) {
-    if (gust > 0) { gust = `/${Math.round(gust * 1.944)}`; } else gust = '';
-    return gust;
+  function calcWndSpd(spd) {
+    return spd * 1.944;
   }
 
-  let unit;
-  let Cchecked = 'checked';
-  let Fchecked;
-  const units = localStorage.getItem('units');
-  units === 'F' ? unit = units : unit = 'C';
+  function calcGust(gust) {
+    let g = gust;
+    if (g > 0) { g = `/${calcWndSpd(g).toFixed(0)}`; } else g = '';
+    return g;
+  }
 
-  function setUnits(t) {
-    let temp;
-    if (unit === 'F') {
-      temp = ((t * 1.8) + 32);
-      Fchecked = 'checked';
+  let cChecked;
+  let fChecked;
+  const units = JSON.parse(localStorage.getItem('units'));
+  const tempUnit = units.temp;
+
+  function convertTempUnits(temp) {
+    let t;
+    if (tempUnit === 'F') {
+      t = ((temp * 1.8) + 32);
+      fChecked = 'checked';
     }
     else {
-      temp = t;
-      Cchecked = 'checked';
+      t = temp;
+      cChecked = 'checked';
     }
-    return temp;
+    return t;
   }
 
   let result = JSON.parse(sessionStorage.getItem('weather_data'));
@@ -58,10 +62,10 @@ function initWidget() {
   const m = d.getMinutes().toString().padStart(2, 0);
   const s = d.getSeconds().toString().padStart(2, 0);
 
-  const temp = setUnits(data.temp).toFixed(1);
+  const temp = convertTempUnits(data.temp).toFixed(1);
   const desc = data.weather[0].description;
   const icon = data.weather[0].icon;
-  const windSpd = Math.round(data.wind_speed * 1.944);
+  const windSpd = calcWndSpd(data.wind_speed).toFixed(0);
   const gust = calcGust(data.wind_gust);        
   const windDir = getWndDir(data.wind_deg);
   const pres = data.pressure;
@@ -76,16 +80,16 @@ function initWidget() {
 
   document.getElementById('container').innerHTML =
    `<table><tbody>
-    <tr><td colspan="3" style="padding:10px;"><h3>${place}</h3>
-    <h3>${temp}&deg;${unit}</h3>
-    <p style="font-variant:small-caps;">${desc}<br>
-    <img src="PNG/${icon}.png" width="60" height="60" alt="${desc}"></p></td>
-    <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}kt ${windDir}<br>
-    Pressure: ${pres}mb<br>
-    Humidity: ${hum}&percnt;</p>
-    <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
-    <p>Updated: ${h}:${m}:${s}</p></td></tr>
-    <tr id="forecast">`;
+      <tr><td colspan="3" style="padding:10px;"><h3>${place}</h3>
+      <h3>${temp}&deg;${tempUnit}</h3>
+      <p style="font-variant:small-caps;">${desc}<br>
+      <img src="PNG/${icon}.png" width="60" height="60" alt="${desc}"></p></td>
+      <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}kt ${windDir}<br>
+      Pressure: ${pres}mb<br>
+      Humidity: ${hum}&percnt;</p>
+      <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
+      <p>Updated: ${h}:${m}:${s}</p></td></tr>
+      <tr id="forecast">`;
 document.getElementById('searchForm').addEventListener('submit', searchLocation);
 
   // 7 day forecast;
@@ -106,11 +110,11 @@ document.getElementById('searchForm').addEventListener('submit', searchLocation)
       case 6: d = 'Sat';
     }
 
-    const tempMax = setUnits(data[i].temp.max).toFixed(0);
-    const tempMin = setUnits(data[i].temp.min).toFixed(0);
+    const tempMax = convertTempUnits(data[i].temp.max).toFixed(0);
+    const tempMin = convertTempUnits(data[i].temp.min).toFixed(0);
     const dailyDesc = data[i].weather[0].description.toUpperCase();
     const dailyIcon = data[i].weather[0].icon;
-    const dailyWindSpd = Math.round(data[i].wind_speed * 1.944);
+    const dailyWindSpd = calcWndSpd(data[i].wind_speed).toFixed(0);
     const dailyGust = calcGust(data[i].wind_gust);
     const dailyWindDir = getWndDir(data[i].wind_deg);
     let rain;
@@ -121,29 +125,30 @@ document.getElementById('searchForm').addEventListener('submit', searchLocation)
     const dailyPres = Math.round(data[i].pressure);
 
   document.getElementById('forecast').innerHTML +=
-   `<td><table><tr><td>${d}</td></tr>
-    <tr><td title="Min/max temp">${tempMax}/${tempMin}&deg;${unit}</td></tr>
-    <tr><td title="${dailyDesc}">
-    <img src="PNG/${dailyIcon}.png"
-    width="30" height="30"
-    alt="${dailyDesc}"
-    title="${dailyDesc}"></td></tr>
-    <tr><td title="Wind speed/gust">${dailyWindSpd}${dailyGust}kt</td></tr>
-    <tr><td title="Wind direction">${dailyWindDir}</td></tr>
-    <tr><td title="Chance of rain">${POP}&percnt;</td></tr>
-    <tr><td title="Amount of rain">${rain}mm</td></tr>
-    <tr><td title="Pressure">${dailyPres}mb</td></tr>
-    </table>`;
+      `<td><table><tr><td>${d}</td></tr>
+       <tr><td title="Min/max temp">${tempMax}/${tempMin}&deg;${tempUnit}</td></tr>
+       <tr><td title="${dailyDesc}">
+       <img src="PNG/${dailyIcon}.png"
+       width="30" height="30"
+       alt="${dailyDesc}"
+       title="${dailyDesc}"></td></tr>
+       <tr><td title="Wind speed/gust">${dailyWindSpd}${dailyGust}kt</td></tr>
+       <tr><td title="Wind direction">${dailyWindDir}</td></tr>
+       <tr><td title="Chance of rain">${POP}&percnt;</td></tr>
+       <tr><td title="Amount of rain">${rain}mm</td></tr>
+       <tr><td title="Pressure">${dailyPres}mb</td></tr>
+     </table>`;
   }
   document.getElementById('container').innerHTML += '</td></tr></tbody></table></div>';
 
   document.getElementById('footer').innerHTML =
-    `<p><a href='hourly.html'>Hourly 48h</a>
-       <a href="5-days.html?lat=${lat}&lon=${lon}&place=${place}">3 hourly 5 days</a>
-       <a href="radar.html?lat=${lat}&lon=${lon}">Rainfall radar</a></p>
-       <label><input type="radio" name="units" value="C" ${Cchecked} onchange="getUnits()">Celsius</label>
-       <label><input type="radio" name="units" value="F" ${Fchecked} onchange="getUnits()">Fahrenheit</label>       
-     <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>`;
+      `<p><a href='hourly.html'>Hourly 48h</a>
+         <a href="5-days.html">3 hourly 5 days</a>
+         <a href="radar.html">Rainfall radar</a></p>
+         <label><input type="radio" name="units" value="C" onchange="getUnits()" ${cChecked}>Celsius</label>
+         <label><input type="radio" name="units" value="F" onchange="getUnits()" ${fChecked}>Fahrenheit</label>       
+       <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>`;
+
 }
 
 document.getElementById('search').innerHTML = 
@@ -158,17 +163,22 @@ function getLocation(result) {
   document.getElementById('results').innerHTML = '';
   
   if (result.length > 0) {
-    for (let i = 0; i < result.length; i++) {
+    result.forEach(res => {
       document.getElementById('results').innerHTML +=
-        `<p><a href="index.html?lat=${result[i].lat}&lon=${result[i].lon}&place=${result[i].name}">${result[i].name}, ${result[i].state}, ${result[i].country}</a></p>`;
-    }
+        `<p><a href="index.html?lat=${res.lat}&lon=${res.lon}&place=${res.name}">${res.name}, ${res.state}, ${res.country}</a></p>`;
+    });
   } else document.getElementById('results').innerHTML = '<p>No results</p>';
 }
 
+
 function getUnits() {
-  const units = document.getElementsByName('units');
-  units.forEach(unit => {
-    if (unit.checked) localStorage.setItem('units', unit.value);
+  const radios = document.getElementsByName('units');
+  const tmp = JSON.parse(localStorage.getItem('units'));
+  radios.forEach(radio => {
+    if (radio.checked) {
+      tmp.temp = radio.value;
+      localStorage.setItem('units', JSON.stringify(tmp));
+    }
     });
   initWidget();
 }
@@ -198,6 +208,9 @@ document.getElementById('searchForm').addEventListener('submit', searchLocation)
 
 // Get location from local storage if it's there, empty object if not
 const vars = JSON.parse(localStorage.getItem('vars')) || {};
+// Likewise, but set defaults too
+const units = JSON.parse(localStorage.getItem('units')) || localStorage.setItem('units', '{"temp": "C", "speed": "kt"}');
+
 // If url has parameters (after search) change to those
 window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => vars[key] = decodeURI(value));
 
