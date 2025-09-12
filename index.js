@@ -25,31 +25,50 @@ function getWndDir(wnd) {
 }
 
 function initWidget() {
-
-  function calcWndSpd(spd) {
-    return spd * 1.944;
-  }
-
   function calcGust(gust) {
-    let g = gust;
-    if (g > 0) { g = `/${calcWndSpd(g).toFixed(0)}`; } else g = '';
+    let g;
+    if (gust > 0) { g = `/${convertSpd(gust).toFixed(0)}`; } else g = '';
     return g;
   }
 
-  let cChecked;
-  let fChecked;
   const units = JSON.parse(localStorage.getItem('units'));
-  const tempUnit = units.temp;
 
-  function convertTempUnits(temp) {
+  function generateRadioButtons(prefs, selectedUnit, name) {
+      let prefsDiv = '';
+      for (const pref of prefs) {
+          const checked = (pref === selectedUnit) ? 'checked' : '';
+          prefsDiv += `<label><input type="radio" name="${name}" value="${pref}" onchange="getUnits('${name}')" ${checked}>${pref}</label>`;
+      }
+      return prefsDiv;
+  }
+
+  const tempPrefs = ['C', 'F'];
+  const tempUnit = units.temp; // Example selected temperature unit
+  const tempPrefsDiv = generateRadioButtons(tempPrefs, tempUnit, 'tempUnits');
+
+  const spdPrefs = ['kt', 'mph', 'Bf'];
+  const spdUnit = units.speed; // Example selected speed unit
+  const spdPrefsDiv = generateRadioButtons(spdPrefs, spdUnit, 'spdUnits');
+
+  function convertSpd(spd) {
+    let s;
+    if (spdUnit === 'kt') {
+      s = spd * 1.944;
+    } else if (spdUnit == 'mph') {
+      s = spd * 2.236936;
+    } else if (spdUnit === 'Bf') {
+      s = (spd / 0.836) ** (2 / 3)
+    }
+      return s;
+  }
+
+  function convertTemp(temp) {
     let t;
     if (tempUnit === 'F') {
       t = ((temp * 1.8) + 32);
-      fChecked = 'checked';
     }
     else {
       t = temp;
-      cChecked = 'checked';
     }
     return t;
   }
@@ -62,10 +81,10 @@ function initWidget() {
   const m = d.getMinutes().toString().padStart(2, 0);
   const s = d.getSeconds().toString().padStart(2, 0);
 
-  const temp = convertTempUnits(data.temp).toFixed(1);
+  const temp = convertTemp(data.temp).toFixed(1);
   const desc = data.weather[0].description;
   const icon = data.weather[0].icon;
-  const windSpd = calcWndSpd(data.wind_speed).toFixed(0);
+  const windSpd = convertSpd(data.wind_speed).toFixed(0);
   const gust = calcGust(data.wind_gust);        
   const windDir = getWndDir(data.wind_deg);
   const pres = data.pressure;
@@ -84,7 +103,7 @@ function initWidget() {
       <h3>${temp}&deg;${tempUnit}</h3>
       <p style="font-variant:small-caps;">${desc}<br>
       <img src="PNG/${icon}.png" width="60" height="60" alt="${desc}"></p></td>
-      <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}kt ${windDir}<br>
+      <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}${spdUnit} ${windDir}<br>
       Pressure: ${pres}mb<br>
       Humidity: ${hum}&percnt;</p>
       <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
@@ -110,11 +129,11 @@ document.getElementById('searchForm').addEventListener('submit', searchLocation)
       case 6: d = 'Sat';
     }
 
-    const tempMax = convertTempUnits(data[i].temp.max).toFixed(0);
-    const tempMin = convertTempUnits(data[i].temp.min).toFixed(0);
+    const tempMax = convertTemp(data[i].temp.max).toFixed(0);
+    const tempMin = convertTemp(data[i].temp.min).toFixed(0);
     const dailyDesc = data[i].weather[0].description.toUpperCase();
     const dailyIcon = data[i].weather[0].icon;
-    const dailyWindSpd = calcWndSpd(data[i].wind_speed).toFixed(0);
+    const dailyWindSpd = convertSpd(data[i].wind_speed).toFixed(0);
     const dailyGust = calcGust(data[i].wind_gust);
     const dailyWindDir = getWndDir(data[i].wind_deg);
     let rain;
@@ -132,7 +151,7 @@ document.getElementById('searchForm').addEventListener('submit', searchLocation)
        width="30" height="30"
        alt="${dailyDesc}"
        title="${dailyDesc}"></td></tr>
-       <tr><td title="Wind speed/gust">${dailyWindSpd}${dailyGust}kt</td></tr>
+       <tr><td title="Wind speed/gust">${dailyWindSpd}${dailyGust}${spdUnit}</td></tr>
        <tr><td title="Wind direction">${dailyWindDir}</td></tr>
        <tr><td title="Chance of rain">${POP}&percnt;</td></tr>
        <tr><td title="Amount of rain">${rain}mm</td></tr>
@@ -145,10 +164,13 @@ document.getElementById('searchForm').addEventListener('submit', searchLocation)
       `<p><a href='hourly.html'>Hourly 48h</a>
          <a href="5-days.html">3 hourly 5 days</a>
          <a href="radar.html">Rainfall radar</a></p>
-         <label><input type="radio" name="units" value="C" onchange="getUnits()" ${cChecked}>Celsius</label>
-         <label><input type="radio" name="units" value="F" onchange="getUnits()" ${fChecked}>Fahrenheit</label>       
+         <div id="tempPrefs">
+          ${tempPrefsDiv}
+         </div>
+         <div id="spdPrefs">
+          ${spdPrefsDiv}
+         </div>
        <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>`;
-
 }
 
 document.getElementById('search').innerHTML = 
@@ -171,14 +193,17 @@ function getLocation(result) {
 }
 
 
-function getUnits() {
-  const radios = document.getElementsByName('units');
+function getUnits(t) {
+  const radios = document.getElementsByName(t);
   const tmp = JSON.parse(localStorage.getItem('units'));
   radios.forEach(radio => {
-    if (radio.checked) {
-      tmp.temp = radio.value;
-      localStorage.setItem('units', JSON.stringify(tmp));
-    }
+      if (radio.checked) {
+        if (t === 'tempUnits') {
+          tmp.temp = radio.value;
+        } else tmp.speed = radio.value;
+
+        localStorage.setItem('units', JSON.stringify(tmp));
+      }
     });
   initWidget();
 }
