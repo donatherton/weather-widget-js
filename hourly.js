@@ -6,7 +6,7 @@ function dayNight(sr, ss, h) {
   return dn;
 }
 
-function get_wnd_dir(wnd) {
+function getWndDir(wnd) {
   let wndDir = wnd;
   switch (true) {
     case (wndDir <= 11):  wndDir = 'N'; break;
@@ -33,16 +33,16 @@ function get_wnd_dir(wnd) {
 function wndSpdColour(wndSpd) {
   let Wsp;
   switch (true) {
-    case wndSpd < 5: Wsp = '#888'; break;
-    case wndSpd >= 5 && wndSpd < 10: Wsp = '#555'; break;
-    case wndSpd >= 10 && wndSpd < 15: Wsp = '#333'; break;
-    case wndSpd >= 15 && wndSpd < 20: Wsp = '#b3b300'; break;
-    case wndSpd >= 20 && wndSpd < 25: Wsp = '#ff9900'; break;
-    case wndSpd >= 25 && wndSpd < 30: Wsp = '#b36b00'; break;
-    case wndSpd >= 30 && wndSpd < 35: Wsp = '#ff5050'; break;
-    case wndSpd >= 35 && wndSpd < 40: Wsp = '#e60000'; break;
-    case wndSpd >= 40 && wndSpd < 50: Wsp = '#800000;font-weight:bold'; break;
-    case wndSpd >= 50: Wsp = '#ff0000;font-weight:bold';
+    case wndSpd < 2: Wsp = '#888'; break;
+    case wndSpd >= 2 && wndSpd < 5: Wsp = '#555'; break;
+    case wndSpd >= 5 && wndSpd < 7: Wsp = '#333'; break;
+    case wndSpd >= 7 && wndSpd < 9: Wsp = '#b3b300'; break;
+    case wndSpd >= 9 && wndSpd < 12: Wsp = '#ff9900'; break;
+    case wndSpd >= 12 && wndSpd < 14: Wsp = '#b36b00'; break;
+    case wndSpd >= 14 && wndSpd < 17: Wsp = '#ff5050'; break;
+    case wndSpd >= 17 && wndSpd < 20: Wsp = '#e60000'; break;
+    case wndSpd >= 20 && wndSpd < 25: Wsp = '#800000;font-weight:bold'; break;
+    case wndSpd >= 25: Wsp = '#ff0000;font-weight:bold';
   }
   return Wsp;
 }
@@ -73,6 +73,29 @@ function cloudColour(cloud) {
   return Clbg;
 }
 
+function convertSpd(spd) {
+    let s;
+    if (units.speed === 'kt') {
+      s = spd * 1.944;
+    } else if (units.speed == 'mph') {
+      s = spd * 2.236936;
+    } else if (units.speed === 'Bf') {
+      s = (spd / 0.836) ** (2 / 3)
+    }
+      return s;
+  }
+
+function convertTemp(temp) {
+  let t;
+  if (units.temp === 'F') {
+    t = ((temp * 1.8) + 32);
+  }
+  else {
+    t = temp;
+  }
+  return t;
+}
+
 function initWidget(result) {
   const data = JSON.parse(result);
 
@@ -80,22 +103,24 @@ function initWidget(result) {
 
   for (let i = 0; i < 48; i++) {
     const ts = fc[i].dt + data.timezone_offset;
-    const temp = Math.round(fc[i].temp * 10) / 10;
+    const temp = convertTemp(fc[i].temp).toFixed(1);
+    const tbg = tempColour(fc[i].temp);
     const symbol = fc[i].weather[0].icon;
     const cond = fc[i].weather[0].description;
-    const wndSpd = Math.round(fc[i].wind_speed * 1.944);
+    const wndSpd = convertSpd(fc[i].wind_speed).toFixed(0);
+    const wsp = wndSpdColour(fc[i].wind_speed);
     const wndDir = fc[i].wind_deg;
     let gust;
     if  (fc[i].wind_gust) {
       gust = fc[i].wind_gust;
-      gust = `/${Math.round(gust * 1.944)}`;
+      gust = `/${convertSpd(gust).toFixed(0)}`;
     } else {
       gust = '';
     }
     const pres = fc[i].pressure;
     let rain;
     if (fc[i].rain) {
-      rain = `<b>${Math.round((fc[i].rain['1h']) * 10) / 10}mm</b>`;
+      rain = `<b>${fc[i].rain['1h'].toFixed(1)}mm</b>`;
     } else {
       rain = '0mm';
     }
@@ -124,15 +149,16 @@ function initWidget(result) {
 
     document.getElementById('forecast').innerHTML +=
       `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
-          <td style="padding-right:3px;color:${tempColour(temp)}"><strong>${temp}&deg;C</strong></td>
+          <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${units.temp}</strong></td>
           <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
           <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
-          <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wndSpdColour(wndSpd)}">
-    ${wndSpd}${gust}kt</td><td>${get_wnd_dir(wndDir)}</td><td>${pres}mb</td></tr>`;
+          <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">
+    ${wndSpd}${gust}${units.speed}</td><td>${getWndDir(wndDir)}</td><td>${pres}mb</td></tr>`;
   }
 }
 
 const place = JSON.parse(localStorage.getItem('vars')).place;
+const units = JSON.parse(localStorage.getItem('units'));
 
 document.getElementById('container').innerHTML = 
   `<table>

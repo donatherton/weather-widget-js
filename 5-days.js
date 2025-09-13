@@ -35,16 +35,16 @@ function cloudColour(cloud) {
 function wndSpdColour(wndSpd) {
   let Wsp;
   switch (true) {
-    case wndSpd < 5: Wsp = '#888'; break;
-    case wndSpd >= 5 && wndSpd < 10: Wsp = '#555'; break;
-    case wndSpd >= 10 && wndSpd < 15: Wsp = '#333'; break;
-    case wndSpd >= 15 && wndSpd < 20: Wsp = '#b3b300'; break;
-    case wndSpd >= 20 && wndSpd < 25: Wsp = '#ff9900'; break;
-    case wndSpd >= 25 && wndSpd < 30: Wsp = '#b36b00'; break;
-    case wndSpd >= 30 && wndSpd < 35: Wsp = '#ff5050'; break;
-    case wndSpd >= 35 && wndSpd < 40: Wsp = '#e60000'; break;
-    case wndSpd >= 40 && wndSpd < 50: Wsp = '#800000;font-weight:bold'; break;
-    case wndSpd >= 50: Wsp = '#ff0000;font-weight:bold';
+    case wndSpd < 2: Wsp = '#888'; break;
+    case wndSpd >= 2 && wndSpd < 5: Wsp = '#555'; break;
+    case wndSpd >= 5 && wndSpd < 7: Wsp = '#333'; break;
+    case wndSpd >= 7 && wndSpd < 9: Wsp = '#b3b300'; break;
+    case wndSpd >= 9 && wndSpd < 12: Wsp = '#ff9900'; break;
+    case wndSpd >= 12 && wndSpd < 14: Wsp = '#b36b00'; break;
+    case wndSpd >= 14 && wndSpd < 17: Wsp = '#ff5050'; break;
+    case wndSpd >= 17 && wndSpd < 20: Wsp = '#e60000'; break;
+    case wndSpd >= 20 && wndSpd < 25: Wsp = '#800000;font-weight:bold'; break;
+    case wndSpd >= 25: Wsp = '#ff0000;font-weight:bold';
   }
   return Wsp;
 }
@@ -73,6 +73,29 @@ function get_wnd_dir(wnd) {
   return wndDir;
 }
 
+function convertSpd(spd) {
+    let s;
+    if (units.speed === 'kt') {
+      s = spd * 1.944;
+    } else if (units.speed == 'mph') {
+      s = spd * 2.236936;
+    } else if (units.speed === 'Bf') {
+      s = (spd / 0.836) ** (2 / 3)
+    }
+      return s;
+  }
+
+function convertTemp(temp) {
+  let t;
+  if (units.temp === 'F') {
+    t = ((temp * 1.8) + 32);
+  }
+  else {
+    t = temp;
+  }
+  return t;
+}
+
 function initWidget(data) {
 
   let sunrise = new Date(data.city.sunrise * 1000);
@@ -84,17 +107,18 @@ function initWidget(data) {
 
   for (let i = 0; i < 40; i++) {
     let time = data.list[i].dt * 1000;
-    let temp = data.list[i].main.temp;
-    temp = Math.round((temp - 273.15));
+    const temp = convertTemp(data.list[i].main.temp - 273.15).toFixed(1);
+    const tbg = tempColour(data.list[i].main.temp -273.15);
+
     const symbol = data.list[i].weather[0].icon;
     const cond = data.list[i].weather[0].description;
     let cloud = data.list[i].clouds.all;
-    let wndSpd = data.list[i].wind.speed;
-    wndSpd = Math.round(wndSpd * 1.944);
+    const wndSpd = convertSpd(data.list[i].wind.speed).toFixed(0);
+    const wsp = wndSpdColour(data.list[i].wind.speed);
     let gust;
     if (data.list[i].wind.gust) {
       gust = data.list[i].wind.gust;
-      gust = '/' + Math.round(gust * 1.944).toString();
+      gust = '/' + convertSpd(gust).toFixed(0);
     } else {
       gust = '';
     }
@@ -123,14 +147,15 @@ function initWidget(data) {
 
     document.getElementById('forecast').innerHTML +=
       `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
-             <td style="padding-right:3px;color:${tempColour(temp)}"><strong>${temp}&deg;C</strong></td>
+             <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;C</strong></td>
              <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
              <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
-             <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wndSpdColour(wndSpd)}">${wndSpd}${gust}kt</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
+             <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">${wndSpd}${gust}kt</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
   }
 }
 
 const vars = JSON.parse(localStorage.getItem('vars'));
+const units = JSON.parse(localStorage.getItem('units'));
 
 const { lat } = vars;
 const { lon } = vars;
