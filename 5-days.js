@@ -1,5 +1,6 @@
 "use strict"
 function FiveDays() {
+  const appid = appidStore.getAppid();
   function dayNight(sr, ss, h) {
     let dn;
     if (sr <= h && h <= ss) { dn = '-d'; } else { dn = '-n'; }

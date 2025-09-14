@@ -1,6 +1,9 @@
 "use strict";
-function Widget() { 
-  function initWidget() {
+
+function Widget() {
+  const appid = appidStore.getAppid();
+
+  function initWidget() { console.log(appid);
     // Helper functions
     function calcGust(gust) {
       let g;
@@ -260,7 +263,7 @@ function Widget() {
       })
       .then(result => {
         sessionStorage.setItem("weather_data", JSON.stringify(result));
-        initWidget(lat, lon, place)
+        initWidget()
       })
     .catch(err => alert(`Error: ${err}`))
   }
