@@ -147,10 +147,10 @@ function initWidget(data) {
 
     document.getElementById('forecast').innerHTML +=
       `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
-             <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;C</strong></td>
+             <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${units.temp}</strong></td>
              <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
              <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
-             <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">${wndSpd}${gust}kt</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
+             <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">${wndSpd}${gust}${units.speed}</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
   }
 }
 
