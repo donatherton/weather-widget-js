@@ -1,9 +1,9 @@
 "use strict";
 
 function Widget() {
-  const appid = appidStore.getAppid();
+  const appid = getAppid();
 
-  function initWidget() { console.log(appid);
+  function initWidget() {
     // Helper functions
     function calcGust(gust) {
       let g;
