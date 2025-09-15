@@ -72,8 +72,8 @@ function Widget() {
       d = new Date(data[i].dt * 1000).getDay();
       d = dayArray[d];
 
-      const tempMax = convertTemp(data[i].temp.max).toFixed(0);
-      const tempMin = convertTemp(data[i].temp.min).toFixed(0);
+      const tempMax = convertTemp(data[i].temp.max, tempUnit).toFixed(0);
+      const tempMin = convertTemp(data[i].temp.min, tempUnit).toFixed(0);
       const dailyDesc = data[i].weather[0].description.toUpperCase();
       const dailyIcon = data[i].weather[0].icon;
       const dailyWindSpd = convertSpd(data[i].wind_speed, spdUnit).toFixed(0);
@@ -142,7 +142,7 @@ function Widget() {
     return s;
   }
 
-  function convertTemp(temp, tempUnit) {
+  function convertTemp(temp, tempUnit) { //console.log(tempUnit);
     let t;
     if (tempUnit === 'F') {
       t = ((temp * 1.8) + 32);
