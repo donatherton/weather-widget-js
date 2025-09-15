@@ -92,24 +92,11 @@ function FiveDays() {
       const wndSpd = convertSpd(data.list[i].wind.speed).toFixed(0);
       const wsp = wndSpdColour(data.list[i].wind.speed);
       let gust;
-      if (data.list[i].wind.gust) {
-        gust = data.list[i].wind.gust;
-        gust = '/' + convertSpd(gust).toFixed(0);
-      } else {
-        gust = '';
-      }
+      data.list[i].wind.gust ? gust = '/' + convertSpd(data.list[i].wind.gust).toFixed(0) : gust = '';
       let wndDir = getWndDir(data.list[i].wind.deg);
       let prs = data.list[i].main.pressure;
       let rain;
-      if (data.list[i]['rain']) {
-        rain = data.list[i]['rain']['3h'].toFixed(1);
-      } else rain = '0';
-
-      if (rain > 0) {
-        rain = `<b>${rain}mm</b>`;
-      } else {
-        rain = '0mm';
-      }
+      data.list[i]['rain'] ? rain = `<b>${data.list[i]['rain']['3h'].toFixed(1)}mm</b>` : rain = '0mm';
 
       time = new Date(time);
       const ftime = time.getHours().toString().padStart(2, 0);
@@ -123,10 +110,10 @@ function FiveDays() {
 
       document.getElementById('forecast').innerHTML +=
         `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
-             <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${units.temp}</strong></td>
-             <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
-             <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
-             <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">${wndSpd}${gust}${units.speed}</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
+           <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${units.temp}</strong></td>
+           <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
+           <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
+           <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">${wndSpd}${gust}${units.speed}</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
     }
   }
 

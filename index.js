@@ -2,7 +2,7 @@
 
 function Widget() {
   const appid = getAppid();
-    // Get location from local storage if it's there, defaults if not
+  // Get location from local storage if it's there, defaults if not
   const vars = JSON.parse(localStorage.getItem('vars')) || {"lat": 50, "lon": -5, "place": "Falmouth"};
   // If units in storage ok or set defaults
   localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
@@ -23,6 +23,8 @@ function Widget() {
     const spdPrefsDiv = generateRadioButtons(spdPrefs, spdUnit, 'spdUnits');
 
     let result = JSON.parse(sessionStorage.getItem('weather_data'));
+
+    // Current conditions
     let data = result.current;
 
     let d = new Date((data.dt + result.timezone_offset) * 1000);
@@ -41,7 +43,7 @@ function Widget() {
 
     const sunrise = new Date((data.sunrise + result.timezone_offset) * 1000);
     const sunriseHour = sunrise.getUTCHours().toString().padStart(2, '0');
-    const sunriseMin = sunrise.getMinutes().toString().padStart(2, 0);
+    const sunriseMin = sunrise.getMinutes().toString().padStart(2, '0');
     const sunset = new Date((data.sunset + result.timezone_offset) * 1000);
     const sunsetHour = sunset.getUTCHours().toString().padStart(2, '0');
     const sunsetMin = sunset.getMinutes().toString().padStart(2, '0');
@@ -66,17 +68,9 @@ function Widget() {
     document.getElementById('forecast').innerHTML = '';
 
     for (let i = 0; i < 5; i++) {
-      d = new Date(data[i].dt * 1000);
-      d = d.getDay();
-      switch (d) {
-        case 0: d = 'Sun'; break;
-        case 1: d = 'Mon'; break;
-        case 2: d = 'Tue'; break;
-        case 3: d = 'Wed'; break;
-        case 4: d = 'Thu'; break;
-        case 5: d = 'Fri'; break;
-        case 6: d = 'Sat';
-      }
+      const dayArray = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      d = new Date(data[i].dt * 1000).getDay();
+      d = dayArray[d];
 
       const tempMax = convertTemp(data[i].temp.max).toFixed(0);
       const tempMin = convertTemp(data[i].temp.min).toFixed(0);
@@ -86,9 +80,7 @@ function Widget() {
       const dailyGust = calcGust(data[i].wind_gust, spdUnit);
       const dailyWindDir = getWndDir(data[i].wind_deg);
       let rain;
-      if (data[i].rain) {
-        rain = data[i].rain.toFixed(1);
-      } else rain = '0';
+      data[i].rain ? rain = data[i].rain.toFixed(1) : rain = '0';
       const POP = Math.round(data[i].pop * 100);
       const dailyPres = Math.round(data[i].pressure);
 
@@ -126,7 +118,7 @@ function Widget() {
 
   function calcGust(gust, spdUnit) {
     let g;
-    if (gust > 0) { g = `/${convertSpd(gust, spdUnit).toFixed(0)}`; } else g = '';
+    gust > 0 ? g = `/${convertSpd(gust, spdUnit).toFixed(0)}` : g = '';
     return g;
   }
 
@@ -142,12 +134,10 @@ function Widget() {
 
   function convertSpd(spd, spdUnit) {
     let s;
-    if (spdUnit === 'kt') {
-      s = spd * 1.944;
-    } else if (spdUnit == 'mph') {
-      s = spd * 2.236936;
-    } else if (spdUnit === 'Bf') {
-      s = (spd / 0.836) ** (2 / 3)
+    switch (spdUnit) {
+      case ('mph'): s = spd * 2.236936; break;
+      case ('kt'): s = spd * 1.944; break;
+      case ('Bf'): s = (spd / 0.836) ** (2 / 3);
     }
     return s;
   }
@@ -185,7 +175,7 @@ function Widget() {
     if (result.length > 0) {
       result.forEach(res => {
         document.getElementById('results').innerHTML +=
-          `<p><a href="index.html?lat=${res.lat}&lon=${res.lon}&place=${res.name}">${res.name}, ${res.state}, ${res.country}</a></p>`;
+          `<p><a href="index.html?lat=${res.lat}&lon=${res.lon}&place=${res.name || ''}">${res.name} ${res.state || ''} ${res.country || ''}</a></p>`;
       });
     } else document.getElementById('results').innerHTML = '<p>No results</p>';
   }
@@ -207,19 +197,19 @@ function Widget() {
           return response.json();
         })
         .then(result => getLocation(result))
-      .catch(err => alert(`Error: ${err}`))
+        .catch(err => alert(`Error: ${err}`))
     }
   }
 
   function initSearchForm() {
     document.getElementById('search').innerHTML = 
-    `<form id="searchForm">
+      `<form id="searchForm">
       <p><label for="loc">Location search </label>
         <input id="loc" type="text" name="loc"></p>
       <p><input type="submit" name="submit" value="OK"></p>
    </form>
    <div id="results"></div>`;
-  document.getElementById('searchForm').addEventListener('submit', searchLocation);
+    document.getElementById('searchForm').addEventListener('submit', searchLocation);
   }
 
   // If url has parameters (after search) change to those
@@ -254,7 +244,7 @@ function Widget() {
           sessionStorage.setItem("weather_data", JSON.stringify(result));
           initWidget()
         })
-      .catch(err => alert(`Error: ${err}`))
+        .catch(err => alert(`Error: ${err}`))
     }
   }
 }

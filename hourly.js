@@ -87,19 +87,10 @@ function Hourly() {
       const wsp = wndSpdColour(fc[i].wind_speed);
       const wndDir = fc[i].wind_deg;
       let gust;
-      if  (fc[i].wind_gust) {
-        gust = fc[i].wind_gust;
-        gust = `/${convertSpd(gust).toFixed(0)}`;
-      } else {
-        gust = '';
-      }
+      fc[i].wind_gust ? gust = `/${convertSpd(fc[i].wind_gust).toFixed(0)}` : gust = '';
       const pres = fc[i].pressure;
       let rain;
-      if (fc[i].rain) {
-        rain = `<b>${fc[i].rain['1h'].toFixed(1)}mm</b>`;
-      } else {
-        rain = '0mm';
-      }
+      fc[i].rain ? rain = `<b>${fc[i].rain['1h'].toFixed(1)}mm</b>` : rain = '0mm';
       const cloud = fc[i].clouds;
 
       let sunrise = data.current.sunrise;
