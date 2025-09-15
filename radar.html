@@ -61,10 +61,10 @@ float:left;
 <script>
 
 
-const vars = JSON.parse(localStorage.getItem('vars'));
+    const vars = JSON.parse(localStorage.getItem('vars'));
 
-const { lat } = vars;
-const { lon } = vars;
+    const { lat } = vars;
+    const { lon } = vars;
 
     var map = L.map('mapid').setView([lat, lon], 7);
 

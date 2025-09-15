@@ -2,74 +2,18 @@
 
 function Widget() {
   const appid = getAppid();
+    // Get location from local storage if it's there, defaults if not
+  const vars = JSON.parse(localStorage.getItem('vars')) || {"lat": 50, "lon": -5, "place": "Falmouth"};
+  // If units in storage ok or set defaults
+  localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
+  const units = JSON.parse(localStorage.getItem('units'));
+
+  initSearchForm();
+  loadUrlParams();
+  saveVars();
+  callApi();
 
   function initWidget() {
-    // Helper functions
-    function calcGust(gust) {
-      let g;
-      if (gust > 0) { g = `/${convertSpd(gust).toFixed(0)}`; } else g = '';
-      return g;
-    }
-
-    function generateRadioButtons(prefs, selectedUnit, name) {
-      let prefsDiv = `<form id="${name}">`;
-      for (const pref of prefs) {
-        const checked = (pref === selectedUnit) ? 'checked' : '';
-        prefsDiv += `<label><input type="radio" name="${name}" value="${pref}"  ${checked}>${pref}</label>`;
-      }
-      prefsDiv += '</form>';
-      return prefsDiv;
-    }
-
-    function convertSpd(spd) {
-      let s;
-      if (spdUnit === 'kt') {
-        s = spd * 1.944;
-      } else if (spdUnit == 'mph') {
-        s = spd * 2.236936;
-      } else if (spdUnit === 'Bf') {
-        s = (spd / 0.836) ** (2 / 3)
-      }
-      return s;
-    }
-
-    function convertTemp(temp) {
-      let t;
-      if (tempUnit === 'F') {
-        t = ((temp * 1.8) + 32);
-      }
-      else {
-        t = temp;
-      }
-      return t;
-    }
-
-    function getWndDir(wnd) {
-      let wndDir = wnd;
-      switch (true) {
-        case (wndDir <= 11):   wndDir = 'N'; break;
-        case (wndDir > 11 && wndDir <= 33): wndDir = 'NNE'; break;
-        case (wndDir > 33 && wndDir <= 56):   wndDir = 'NE'; break;
-        case (wndDir > 56 && wndDir <= 78): wndDir = 'ENE'; break;
-        case (wndDir > 78 && wndDir <= 101): wndDir = 'E'; break;
-        case (wndDir > 101 && wndDir <= 123): wndDir = 'ESE'; break;
-        case (wndDir > 123 && wndDir <= 146): wndDir = 'SE'; break;
-        case (wndDir > 146 && wndDir <= 168): wndDir = 'SSE'; break;
-        case (wndDir > 168 && wndDir <= 190): wndDir = 'S'; break;
-        case (wndDir > 190 && wndDir <= 213): wndDir = 'SSW'; break;
-        case (wndDir > 213 && wndDir <= 235): wndDir = 'SW'; break;
-        case (wndDir > 235 && wndDir <= 258): wndDir = 'WSW'; break;
-        case (wndDir > 258 && wndDir <= 280): wndDir = 'W'; break;
-        case (wndDir > 280 && wndDir <= 303): wndDir = 'WNW'; break;
-        case (wndDir > 303 && wndDir <= 325): wndDir = 'NW'; break;
-        case (wndDir > 325 && wndDir <= 347): wndDir = 'NNW'; break;
-        case (wndDir > 347 && wndDir <= 360): wndDir = 'N';
-      }
-      return wndDir;
-    }
-
-    const units = JSON.parse(localStorage.getItem('units'));
-
     const tempPrefs = ['C', 'F'];
     const tempUnit = units.temp; // Example selected temperature unit
     const tempPrefsDiv = generateRadioButtons(tempPrefs, tempUnit, 'tempUnits');
@@ -81,30 +25,30 @@ function Widget() {
     let result = JSON.parse(sessionStorage.getItem('weather_data'));
     let data = result.current;
 
-    let d = new Date(data.dt * 1000);
-    const h = d.getHours().toString().padStart(2, 0);
-    const m = d.getMinutes().toString().padStart(2, 0);
-    const s = d.getSeconds().toString().padStart(2, 0);
+    let d = new Date((data.dt + result.timezone_offset) * 1000);
+    const h = d.getUTCHours().toString().padStart(2, '0')
+    const m = d.getMinutes().toString().padStart(2, '0');
+    const s = d.getSeconds().toString().padStart(2, '0');
 
-    const temp = convertTemp(data.temp).toFixed(1);
+    const temp = convertTemp(data.temp, tempUnit).toFixed(1);
     const desc = data.weather[0].description;
     const icon = data.weather[0].icon;
-    const windSpd = convertSpd(data.wind_speed).toFixed(0);
-    const gust = calcGust(data.wind_gust);        
+    const windSpd = convertSpd(data.wind_speed, spdUnit).toFixed(0);
+    const gust = calcGust(data.wind_gust, spdUnit);        
     const windDir = getWndDir(data.wind_deg);
     const pres = data.pressure;
     const hum = data.humidity
 
-    const sunrise = new Date(data.sunrise * 1000);
-    const sunriseHour = sunrise.getHours().toString().padStart(2, 0);
+    const sunrise = new Date((data.sunrise + result.timezone_offset) * 1000);
+    const sunriseHour = sunrise.getUTCHours().toString().padStart(2, '0');
     const sunriseMin = sunrise.getMinutes().toString().padStart(2, 0);
-    const sunset = new Date(data.sunset * 1000);
-    const sunsetHour = sunset.getHours().toString().padStart(2, 0);
-    const sunsetMin = sunset.getMinutes().toString().padStart(2, 0);
+    const sunset = new Date((data.sunset + result.timezone_offset) * 1000);
+    const sunsetHour = sunset.getUTCHours().toString().padStart(2, '0');
+    const sunsetMin = sunset.getMinutes().toString().padStart(2, '0');
 
     document.getElementById('container').innerHTML =
       `<table><tbody>
-      <tr><td colspan="3" style="padding:10px;"><h3>${place}</h3>
+      <tr><td colspan="3" style="padding:10px;"><h3>${vars.place}</h3>
       <h3>${temp}&deg;${tempUnit}</h3>
       <p style="font-variant:small-caps;">${desc}<br>
       <img src="PNG/${icon}.png" width="60" height="60" alt="${desc}"></p></td>
@@ -138,8 +82,8 @@ function Widget() {
       const tempMin = convertTemp(data[i].temp.min).toFixed(0);
       const dailyDesc = data[i].weather[0].description.toUpperCase();
       const dailyIcon = data[i].weather[0].icon;
-      const dailyWindSpd = convertSpd(data[i].wind_speed).toFixed(0);
-      const dailyGust = calcGust(data[i].wind_gust);
+      const dailyWindSpd = convertSpd(data[i].wind_speed, spdUnit).toFixed(0);
+      const dailyGust = calcGust(data[i].wind_gust, spdUnit);
       const dailyWindDir = getWndDir(data[i].wind_deg);
       let rain;
       if (data[i].rain) {
@@ -176,28 +120,64 @@ function Widget() {
           ${spdPrefsDiv}
          </div>
        <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>`;
-
     document.getElementById('tempUnits').addEventListener('change', changeUnits);
     document.getElementById('spdUnits').addEventListener('change', changeUnits);
   }
 
+  function calcGust(gust, spdUnit) {
+    let g;
+    if (gust > 0) { g = `/${convertSpd(gust, spdUnit).toFixed(0)}`; } else g = '';
+    return g;
+  }
+
+  function generateRadioButtons(prefs, selectedUnit, name) {
+    let prefsDiv = `<form id="${name}">`;
+    for (const pref of prefs) {
+      const checked = (pref === selectedUnit) ? 'checked' : '';
+      prefsDiv += `<label><input type="radio" name="${name}" value="${pref}"  ${checked}>${pref}</label>`;
+    }
+    prefsDiv += '</form>';
+    return prefsDiv;
+  }
+
+  function convertSpd(spd, spdUnit) {
+    let s;
+    if (spdUnit === 'kt') {
+      s = spd * 1.944;
+    } else if (spdUnit == 'mph') {
+      s = spd * 2.236936;
+    } else if (spdUnit === 'Bf') {
+      s = (spd / 0.836) ** (2 / 3)
+    }
+    return s;
+  }
+
+  function convertTemp(temp, tempUnit) {
+    let t;
+    if (tempUnit === 'F') {
+      t = ((temp * 1.8) + 32);
+    }
+    else {
+      t = temp;
+    }
+    return t;
+  }
+
+  function getWndDir(degrees) {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+      'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    const index = Math.floor(((degrees + 11.25) % 360) / 22.5);
+    return directions[index];
+  }
 
   function changeUnits(e) {
-    const tmp = JSON.parse(localStorage.getItem('units'));
+    const tmp = units;
     if (e.target.name === 'tempUnits') {
       tmp.temp = e.target.value;
     } else tmp.speed = e.target.value;
     localStorage.setItem('units', JSON.stringify(tmp));
     initWidget();
   }
-
-  document.getElementById('search').innerHTML = 
-    `<form id="searchForm">
-      <p><label for="loc">Location search </label>
-        <input id="loc" type="text" name="loc"></p>
-      <p><input type="submit" name="submit" value="OK"></p>
-   </form>
-   <div id="results"></div>`;
 
   function getLocation(result) {
     document.getElementById('results').innerHTML = '';
@@ -231,41 +211,51 @@ function Widget() {
     }
   }
 
+  function initSearchForm() {
+    document.getElementById('search').innerHTML = 
+    `<form id="searchForm">
+      <p><label for="loc">Location search </label>
+        <input id="loc" type="text" name="loc"></p>
+      <p><input type="submit" name="submit" value="OK"></p>
+   </form>
+   <div id="results"></div>`;
   document.getElementById('searchForm').addEventListener('submit', searchLocation);
-
-  // Get location from local storage if it's there, empty object if not
-  const vars = JSON.parse(localStorage.getItem('vars')) || {};
-  // If units in storege ok or set defaults
-  localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
-
-  // If url has parameters (after search) change to those
-  window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => vars[key] = decodeURI(value));
-
-  const { lat } = vars;
-  const { lon } = vars;
-  const { place } = vars;
-
-  if (lat && lon && place) {
-    localStorage.setItem('vars', JSON.stringify(vars));
   }
 
-  //Send request for data
-  if (lat && lon && appid) {
-    const controller = new AbortController();
-    setTimeout(() => controller.abort('Network error'), 5000);
-    fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${appid}`,
-      { signal: controller.signal })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Network response not ok: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then(result => {
-        sessionStorage.setItem("weather_data", JSON.stringify(result));
-        initWidget()
-      })
-    .catch(err => alert(`Error: ${err}`))
+  // If url has parameters (after search) change to those
+  function loadUrlParams() {
+    window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => {
+      vars[key] = decodeURI(value);
+    });
+  };
+
+  function saveVars() {
+    const { lat, lon, place } = vars;
+    if (lat && lon && place) {
+      localStorage.setItem('vars', JSON.stringify(vars));
+    }
+  }
+
+  function callApi() {
+    //Send request for data
+    const { lat, lon } = vars;
+    if (lat && lon && appid) {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort('Network error'), 5000);
+      fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${appid}`,
+        { signal: controller.signal })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Network response not ok: ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then(result => {
+          sessionStorage.setItem("weather_data", JSON.stringify(result));
+          initWidget()
+        })
+      .catch(err => alert(`Error: ${err}`))
+    }
   }
 }
 
