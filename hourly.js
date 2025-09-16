@@ -1,6 +1,13 @@
 "use strict";
 
 function Hourly() {
+
+  const place = JSON.parse(localStorage.getItem('vars')).place;
+  const units = JSON.parse(localStorage.getItem('units'));
+
+  initTable();
+  initWidget(sessionStorage.getItem('weather_data'));
+
   function dayNight(sr, ss, h) {
     let dn;
     if (sr <= h && h <= ss) { dn = '-d'; } else { dn = '-n'; }
@@ -124,11 +131,9 @@ function Hourly() {
     }
   }
 
-  const place = JSON.parse(localStorage.getItem('vars')).place;
-  const units = JSON.parse(localStorage.getItem('units'));
-
-  document.getElementById('container').innerHTML = 
-    `<table>
+  function initTable() {
+    document.getElementById('container').innerHTML = 
+      `<table>
       <thead>
         <tr><td colspan="3"><button class="back_button" onclick="history.back()">Go back</button></td>
           <td colspan="6"><h3>48 hour forecast for ${place}</h3></td></tr>
@@ -146,11 +151,10 @@ function Hourly() {
       </thead>
       <tbody id="forecast">`;
 
-  document.getElementById('container').innerHTML += 
-    `</tbody>
-   </table>`
-
-  initWidget(sessionStorage.getItem('weather_data'));
+    document.getElementById('container').innerHTML += 
+      `</tbody>
+     </table>`;
+  }
 }
 
 const hourly = new Hourly();

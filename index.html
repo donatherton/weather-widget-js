@@ -55,13 +55,35 @@
       input[type="radio"] {
         width: 1.3em;
         height: 1.3em;
-      } 
+      }
+      #loading {
+        width: 2rem;
+        height: 2rem;
+        border: 5px solid #f3f3f3;
+        border-top: 6px solid #9c41f2;
+        border-radius: 100%;
+        margin: auto;
+        visibility: hidden;
+        animation: spin 1s infinite linear;
+      }
+      #loading.display {
+          visibility: visible;
+      }
+      @keyframes spin {
+          from {
+              transform: rotate(0deg);
+          }
+          to {
+              transform: rotate(360deg);
+          }
+      }
     </style>
   </head>
 
   <body>
     <div id="main">
       <div id="search"></div>
+      <div id="loading"></div>
       <div id="container"></div>
       <div id="footer" style="position:relative;"></div>
 

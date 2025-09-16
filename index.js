@@ -7,11 +7,26 @@ function Widget() {
   // If units in storage ok or set defaults
   localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
   const units = JSON.parse(localStorage.getItem('units'));
+  const loader = document.getElementById('loading');
 
   initSearchForm();
   loadUrlParams();
   saveVars();
   callApi();
+
+  // Show spinner during fetch
+  function displayLoading() {
+      loader.classList.add("display");
+      // to stop loading after some time
+      setTimeout(() => {
+          loader.classList.remove("display");
+      }, 10000);
+  }
+
+  // Hide spinner 
+  function hideLoading() {
+      loader.classList.remove("display");
+  }
 
   function initWidget() {
     const tempPrefs = ['C', 'F'];
@@ -182,7 +197,7 @@ function Widget() {
 
   function searchLocation(e) {
     e.preventDefault(); // Needed to stop calling new html doc on submit which cancels fetch
-
+    displayLoading();
     const loc = document.getElementById('loc').value;
     const controller = new AbortController();
     setTimeout(() => controller.abort('Network error'), 5000);
@@ -191,6 +206,7 @@ function Widget() {
       fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${appid}`,
         { signal: controller.signal })
         .then(response => {
+          hideLoading();
           if (!response.ok) {
             throw new Error(`Network response not ok: ${response.statusText}`);
           }
@@ -230,11 +246,13 @@ function Widget() {
     //Send request for data
     const { lat, lon } = vars;
     if (lat && lon && appid) {
+      displayLoading();
       const controller = new AbortController();
-      setTimeout(() => controller.abort('Network error'), 5000);
+      setTimeout(() => controller.abort('Network error'), 10000);
       fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${appid}`,
         { signal: controller.signal })
         .then(response => {
+          hideLoading();
           if (!response.ok) {
             throw new Error(`Network response not ok: ${response.statusText}`);
           }

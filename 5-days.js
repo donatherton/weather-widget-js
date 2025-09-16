@@ -2,7 +2,31 @@
 
 function FiveDays() {
   const appid = getAppid();
-  function dayNight(sr, ss, h) {
+
+  const loader = document.getElementById('loading');
+
+  const vars = JSON.parse(localStorage.getItem('vars'));
+  const units = JSON.parse(localStorage.getItem('units'));
+
+  const { lat, lon, place } = vars;
+
+  initTable();
+  callApi();
+
+  // Show spinner during fetch
+  function displayLoading() {
+    loader.classList.add("display");
+    // to stop loading after some time
+    setTimeout(() => {
+        loader.classList.remove("display");
+    }, 5000);
+  }
+  // Hide spinner 
+  function hideLoading() {
+      loader.classList.remove("display");
+  }
+
+function dayNight(sr, ss, h) {
     let dn;
     if (sr <= h && h <= ss) { dn = '-d'; } else { dn = '-n'; }
     return dn;
@@ -117,13 +141,9 @@ function FiveDays() {
     }
   }
 
-  const vars = JSON.parse(localStorage.getItem('vars'));
-  const units = JSON.parse(localStorage.getItem('units'));
-
-  const { lat, lon, place } = vars;
-
-  document.getElementById('container').innerHTML = 
-    `<table>
+  function initTable() {
+    document.getElementById('container').innerHTML = 
+      `<table>
       <thead>
         <tr><td colspan="3"><button class="back_button" onclick="history.back()">Go back</button></td>
           <td colspan="6"><h3>5 day forecast for ${place}</h3></td></tr>
@@ -141,23 +161,28 @@ function FiveDays() {
       </thead>
       <tbody id="forecast">`;
 
-  document.getElementById('container').innerHTML += 
-    `</tbody>
-   </table>`
+    document.getElementById('container').innerHTML += 
+      `</tbody>
+   </table>`;
+  }
 
-  if (lat && lon && appid) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort('Network error'), 5000);
-    fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${appid}`,
-      { signal: controller.signal })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Network response not ok: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then(result => initWidget(result))
-      .catch(err => alert(`Error: ${err}`))
+  function callApi() {
+    if (lat && lon && appid) {
+      displayLoading();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort('Network error'), 5000);
+      fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${appid}`,
+        { signal: controller.signal })
+        .then(response => {
+          hideLoading();
+          if (!response.ok) {
+            throw new Error(`Network response not ok: ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then(result => initWidget(result))
+        .catch(err => alert(`Error: ${err}`))
+    }
   }
 }
 
