@@ -48,6 +48,7 @@ function Widget() {
     const s = d.getSeconds().toString().padStart(2, '0');
 
     const temp = convertTemp(data.temp, tempUnit).toFixed(1);
+    const feelsLike = convertTemp(data.feels_like, tempUnit).toFixed(1);
     const desc = data.weather[0].description;
     const icon = data.weather[0].icon;
     const windSpd = convertSpd(data.wind_speed, spdUnit).toFixed(0);
@@ -62,18 +63,30 @@ function Widget() {
     const sunset = new Date((data.sunset + result.timezone_offset) * 1000);
     const sunsetHour = sunset.getUTCHours().toString().padStart(2, '0');
     const sunsetMin = sunset.getMinutes().toString().padStart(2, '0');
+    let warnings;
+    data.alerts ? warnings = `<p>${data.alerts.event}</p>
+                              <p>${new Date(data.alerts.start)} - ${new Date(data.alerts.end)}</p>
+                              <p>${data.alerts.description}</p>` : warnings = '';
 
     document.getElementById('container').innerHTML =
       `<table><tbody>
       <tr><td colspan="3" style="padding:10px;"><h3>${vars.place}</h3>
-      <h3>${temp}&deg;${tempUnit}</h3>
+      <P><span style="font-size:large;font-weight:bold">${temp}&deg;${tempUnit}</span> f/l ${feelsLike}&deg;${tempUnit}</p>
       <p style="font-variant:small-caps;">${desc}<br>
-      <img src="PNG/${icon}.png" width="60" height="60" alt="${desc}"></p></td>
+      <img src="PNG/${icon}.png" width="80" height="80" alt="${desc}"></p></td>
       <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}${spdUnit} ${windDir}<br>
       Pressure: ${pres}mb<br>
       Humidity: ${hum}&percnt;</p>
       <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
-      <p>Updated: ${h}:${m}:${s}</p></td></tr>
+      <p>Updated: ${h}:${m}:${s}</p>
+      <div class="tooltip">
+        <span class="tooltiptext">Hover / tap on items in table below for more info</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+        </svg>
+      </div>
+      </td></tr>
       <tr id="forecast">`;
     document.getElementById('searchForm').addEventListener('submit', searchLocation);
 
@@ -98,26 +111,28 @@ function Widget() {
       data[i].rain ? rain = data[i].rain.toFixed(1) : rain = '0';
       const POP = Math.round(data[i].pop * 100);
       const dailyPres = Math.round(data[i].pressure);
+      const summary = data[i].summary;
 
       document.getElementById('forecast').innerHTML +=
         `<td><table><tr><td>${d}</td></tr>
-       <tr><td title="Min/max temp">${tempMax}/${tempMin}&deg;${tempUnit}</td></tr>
-       <tr><td title="${dailyDesc}">
-       <img src="PNG/${dailyIcon}.png"
-       width="30" height="30"
-       alt="${dailyDesc}"
-       title="${dailyDesc}"></td></tr>
-       <tr><td title="Wind speed/gust">${dailyWindSpd}${dailyGust}${spdUnit}</td></tr>
-       <tr><td title="Wind direction">${dailyWindDir}</td></tr>
-       <tr><td title="Chance of rain">${POP}&percnt;</td></tr>
-       <tr><td title="Amount of rain">${rain}mm</td></tr>
-       <tr><td title="Pressure">${dailyPres}mb</td></tr>
-     </table>`;
+         <tr><td class="tooltip"><span class="tooltiptext">Min/max temp</span>${tempMax}/${tempMin}&deg;${tempUnit}</td></tr>
+         <tr><td class="tooltip"><span class="tooltiptext">${dailyDesc}</span>
+         <img src="PNG/${dailyIcon}.png"
+         width="30" height="30"
+         alt="${dailyDesc}">       
+         </td></tr>
+         <tr><td class="tooltip"><span class="tooltiptext">Wind speed/gust</span>${dailyWindSpd}${dailyGust}${spdUnit}</td></tr>
+         <tr><td class="tooltip"><span class="tooltiptext">Wind direction</span>${dailyWindDir}</td></tr>
+         <tr><td class="tooltip"><span class="tooltiptext">Chance of rain</span>${POP}&percnt;</td></tr>
+         <tr><td class="tooltip"><span class="tooltiptext">Amount of rain</span>${rain}mm</td></tr>
+         <tr><td class="tooltip"><span class="tooltiptext">Pressure</span>${dailyPres}mb</td></tr>
+         <tr><td class="tooltip"><span class="tooltiptext">${summary}</span>Summary</td></tr>
+       </table>`;
     }
-    document.getElementById('container').innerHTML += '</td></tr></tbody></table></div>';
+    document.getElementById('container').innerHTML += `</td></tr></tbody></table></div>`;
 
     document.getElementById('footer').innerHTML =
-      `<p><a href='hourly.html'>Hourly 48h</a>
+      `${warnings}<p><a href='hourly.html'>Hourly 48h</a>
          <a href="5-days.html">3 hourly 5 days</a>
          <a href="radar.html">Rainfall radar</a></p>
          <div id="tempPrefs">
@@ -221,8 +236,8 @@ function Widget() {
     document.getElementById('search').innerHTML = 
       `<form id="searchForm">
       <p><label for="loc">Location search </label>
-        <input id="loc" type="text" name="loc"></p>
-      <p><input type="submit" name="submit" value="OK"></p>
+        <input id="loc" type="text" name="loc">
+        <input type="submit" name="submit" value="Go"></p>
    </form>
    <div id="results"></div>`;
     document.getElementById('searchForm').addEventListener('submit', searchLocation);

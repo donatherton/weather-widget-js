@@ -20,6 +20,9 @@
         flex-direction: column;
         align-items: center;
       }
+      p {
+        line-height: 1.3em;
+      }
       a {
         background-color: transparent;
       }
@@ -30,6 +33,17 @@
         background-image: url("PNG/fulmine.jpg");
         background-position: center;
         background-size: cover;
+      }
+       #searchForm {
+        text-align: center;
+      }
+      input[type="submit"] {
+        background-color: #2d386b;
+        color: #fff;
+        border: 1px solid #fff;
+        padding: 2px;
+        margin: 0;
+        cursor: pointer;
       }
       table {
         border-spacing: 0;
@@ -44,30 +58,34 @@
         justify-content: center;          
         gap: 2em;
       }
+      #searchForm {
+        text-align: center;
+      }
       input {
         background-color: #fff;
         color: #000;
         margin: 5px;
       }
       label {
-        margin:20px;
+        margin:10px;
       }
       input[type="radio"] {
         width: 1.3em;
         height: 1.3em;
+        margin: 10px;
       }
       #loading {
         width: 2rem;
         height: 2rem;
         border: 5px solid #f3f3f3;
-        border-top: 6px solid #9c41f2;
+        border-top: 6px solid #666666;
         border-radius: 100%;
         margin: auto;
-        visibility: hidden;
+        display: none;
         animation: spin 1s infinite linear;
       }
       #loading.display {
-          visibility: visible;
+          display: block;
       }
       @keyframes spin {
           from {
@@ -77,6 +95,47 @@
               transform: rotate(360deg);
           }
       }
+
+      .tooltip {
+        position: relative;
+        display: inline-block;
+       /* border-bottom: 1px dotted white; *//* If you want dots under the hoverable text */
+      }
+      /* Tooltip text */
+      .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 120px;
+        background-color: #222;
+        color: #fff;
+        text-align: center;
+        padding: 5px 0;
+        border-radius: 6px;
+        /* Position the tooltip text */
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -60px;
+        /* Fade in tooltip */
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      /* Tooltip arrow */
+      .tooltip .tooltiptext::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #222 transparent transparent transparent;
+      }
+      /* Show the tooltip text when you mouse over the tooltip container */
+      .tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+      }
     </style>
   </head>
 
@@ -84,6 +143,7 @@
     <div id="main">
       <div id="search"></div>
       <div id="loading"></div>
+      <div id="modal"></div>
       <div id="container"></div>
       <div id="footer" style="position:relative;"></div>
 
