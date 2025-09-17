@@ -64,9 +64,7 @@ function Widget() {
     const sunsetHour = sunset.getUTCHours().toString().padStart(2, '0');
     const sunsetMin = sunset.getMinutes().toString().padStart(2, '0');
     let warnings;
-    data.alerts ? warnings = `<p>${data.alerts.event}</p>
-                              <p>${new Date(data.alerts.start)} - ${new Date(data.alerts.end)}</p>
-                              <p>${data.alerts.description}</p>` : warnings = '';
+    result.alerts ? warnings = formatWarnings(result.alerts) : warnings = '';
 
     document.getElementById('container').innerHTML =
       `<table><tbody>
@@ -197,6 +195,30 @@ function Widget() {
     } else tmp.speed = e.target.value;
     localStorage.setItem('units', JSON.stringify(tmp));
     initWidget();
+  }
+
+  function formatWarnings(warnings) {
+    let warningsText = '';
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    warnings.forEach(warning => {
+      try {
+        let start = new Date(warning.start * 1000);
+        start = `${days[start.getDay()]}, ${start.getHours().toString().padStart(2, '0')}hrs`;
+        let end = new Date(warning.end * 1000);
+        end = `${days[end.getDay()]}, ${end.getHours().toString().padStart(2, '0')}hrs`;
+        const event = `<strong>${warning.event}</strong>`;
+        const desc = warning.description.replace(/\n/g, '<br>');
+        const warningText = `<p><strong>Weather warning</strong></p>
+                            <p>${start} - ${end}</p>
+                            <p>${event}</p>
+                            <p>${desc}</p>`
+        warningsText += warningText;
+      }
+      catch(err) {
+        console.log(err);
+      }
+    });
+      return warningsText;
   }
 
   function getLocation(result) {
