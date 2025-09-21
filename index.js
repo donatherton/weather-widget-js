@@ -3,30 +3,17 @@
 function Widget() {
   const appid = getAppid();
   // Get location from local storage if it's there, defaults if not
-  const vars = JSON.parse(localStorage.getItem('vars')) || {"lat": 50, "lon": -5, "place": "Falmouth"};
+  const vars = JSON.parse(localStorage.getItem('vars')) || {"lat": 50.15, "lon": -5.07, "place": "Falmouth"};
   // If units in storage ok or set defaults
   localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
   const units = JSON.parse(localStorage.getItem('units'));
   const loader = document.getElementById('loading');
+  const dayArray = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   initSearchForm();
   loadUrlParams();
   saveVars();
   callApi();
-
-  // Show spinner during fetch
-  function displayLoading() {
-      loader.classList.add("display");
-      // to stop loading after some time
-      setTimeout(() => {
-          loader.classList.remove("display");
-      }, 10000);
-  }
-
-  // Hide spinner 
-  function hideLoading() {
-      loader.classList.remove("display");
-  }
 
   function initWidget() {
     const tempPrefs = ['C', 'F'];
@@ -94,7 +81,6 @@ function Widget() {
     document.getElementById('forecast').innerHTML = '';
 
     for (let i = 0; i < 5; i++) {
-      const dayArray = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       d = new Date(data[i].dt * 1000).getDay();
       d = dayArray[d];
 
@@ -132,7 +118,8 @@ function Widget() {
     document.getElementById('footer').innerHTML =
       `${warnings}<p><a href='hourly.html'>Hourly 48h</a>
          <a href="5-days.html">3 hourly 5 days</a>
-         <a href="radar.html">Rainfall radar</a></p>
+         <a href="radar.html">Radar</a>
+         <a href="ventusky.html">Ventusky</a></p>
          <div id="tempPrefs">
           ${tempPrefsDiv}
          </div>
@@ -142,6 +129,20 @@ function Widget() {
        <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>`;
     document.getElementById('tempUnits').addEventListener('change', changeUnits);
     document.getElementById('spdUnits').addEventListener('change', changeUnits);
+  }
+
+  // Show spinner during fetch
+  function displayLoading() {
+      loader.classList.add("display");
+      // to stop loading after some time
+      setTimeout(() => {
+          loader.classList.remove("display");
+      }, 10000);
+  }
+
+  // Hide spinner 
+  function hideLoading() {
+      loader.classList.remove("display");
   }
 
   function calcGust(gust, spdUnit) {
@@ -199,13 +200,12 @@ function Widget() {
 
   function formatWarnings(warnings) {
     let warningsText = '';
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     warnings.forEach(warning => {
       try {
         let start = new Date(warning.start * 1000);
-        start = `${days[start.getDay()]}, ${start.getHours().toString().padStart(2, '0')}hrs`;
+        start = `${dayArray[start.getDay()]}, ${start.getHours().toString().padStart(2, '0')}hrs`;
         let end = new Date(warning.end * 1000);
-        end = `${days[end.getDay()]}, ${end.getHours().toString().padStart(2, '0')}hrs`;
+        end = `${dayArray[end.getDay()]}, ${end.getHours().toString().padStart(2, '0')}hrs`;
         const event = `<strong>${warning.event}</strong>`;
         const desc = warning.description.replace(/\n/g, '<br>');
         const warningText = `<p><strong>Weather warning</strong></p>
@@ -227,7 +227,7 @@ function Widget() {
     if (result.length > 0) {
       result.forEach(res => {
         document.getElementById('results').innerHTML +=
-          `<p><a href="index.html?lat=${res.lat}&lon=${res.lon}&place=${res.name || ''}">${res.name} ${res.state || ''} ${res.country || ''}</a></p>`;
+          `<p><a href="index.html?lat=${res.lat.toFixed(2)}&lon=${res.lon.toFixed(2)}&place=${res.name || ''}">${res.name} ${res.state || ''} ${res.country || ''}</a></p>`;
       });
     } else document.getElementById('results').innerHTML = '<p>No results</p>';
   }

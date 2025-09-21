@@ -10,6 +10,7 @@ const assets = [
   "/weather-app/leaflet.js",
   "/weather-app/leaflet.css",
   "/weather-app/radar.html",
+  "/weather-app/radar-owm.html",
   "/weather-app/PNG/01d.png",
   "/weather-app/PNG/01n.png",
   "/weather-app/PNG/02d.png",
