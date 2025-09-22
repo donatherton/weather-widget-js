@@ -10,7 +10,6 @@ const assets = [
   "/weather-app/leaflet.js",
   "/weather-app/leaflet.css",
   "/weather-app/radar.html",
-  "/weather-app/radar-owm.html",
   "/weather-app/PNG/01d.png",
   "/weather-app/PNG/01n.png",
   "/weather-app/PNG/02d.png",
@@ -29,13 +28,6 @@ const assets = [
   "/weather-app/PNG/13n.png",
   "/weather-app/PNG/50d.png",
   "/weather-app/PNG/50n.png",
-  "/weather-app/css/owfont-regular.css",
-  "/weather-app/css/owfont-regular.min.css",
-  "/weather-app/fonts/owfont-regular.eot",
-  "/weather-app/fonts/owfont-regular.otf",
-  "/weather-app/fonts/owfont-regular.svg",
-  "/weather-app/fonts/owfont-regular.ttf",
-  "/weather-app/fonts/owfont-regular.woff",
 ]
 
 self.addEventListener('install', (event) => {

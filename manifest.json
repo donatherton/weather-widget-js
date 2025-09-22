@@ -4,10 +4,15 @@
   "start_url": "index.html",
   "display": "standalone",
   "orientation": "portrait-primary",
+  "screenshot": "Screenshot.png",
   "icons": [
     {
-      "src": "icon.svg",
-      "type": "image/svg+xml", "sizes": "90x90"
+      "src": "icon-90x90.svg",
+      "type": "image/svg+xml", 
+      "sizes": "90x90",
+      "src": "icon-144x144.svg",
+      "type": "image/svg+xml", 
+      "sizes": "144x144"
     }
   ]
 }

@@ -119,7 +119,6 @@ function Widget() {
       `${warnings}<p><a href='hourly.html'>Hourly 48h</a>
          <a href="5-days.html">3 hourly 5 days</a>
          <a href="radar.html">Radar</a>
-         <a href="ventusky.html">Ventusky</a></p>
          <div id="tempPrefs">
           ${tempPrefsDiv}
          </div>
