@@ -9,66 +9,70 @@
         <link rel="stylesheet" href="leaflet.css"/>
         <script src="leaflet.js"></script>
         <style type="text/css">
-body {
-    font-size: 80%;
-    text-align: center;
-    font-family: sans-serif;
-    display: flex;
-    justify-content: center;
-}
-        #timestamp {
-            margin: 1em;
-        }
-        #mapid {
-            position: absolute;
-            top: 0;
-            left: 0; bottom: 0; right: 0;
-        }
-        #controls {
-            position: absolute;
-            top: 10px;
-            z-index: 1000;
-            display: inline-block;
-            background-color: white;
-            padding: 10px;
-            border: 1px solid #fff;
-            border-radius: 5px;
-            box-shadow: 3px 3px 3px #888
-        }
-        .button {
-        }
-        .back_button, .button, select {
-            background-color: #555;
-            color: #fff;
-            border: 1px solid #222;
-            border-radius: 5px;
-            padding: 10px;
-            margin: 5px;
-            cursor: pointer;
-        }
-        .back_button {
-            float: left;
-        }
-        input[type="radio"] {
-            width: 1em;
-            height: 1em;
-            margin: 5px;
-        }
-        #time {
-            margin: 5px;
-            font-weight: bold;
-            font-size: large;
-        }
+            body {
+                font-size: 80%;
+                text-align: center;
+                font-family: sans-serif;
+                display: flex;
+                justify-content: center;
+            }
+            #timestamp {
+                margin: 1em;
+            }
+            #mapid {
+                position: absolute;
+                top: 0;
+                left: 0; bottom: 0; right: 0;
+            }
+            #controls {
+                position: absolute;
+                top: 10px;
+                z-index: 1000;
+                display: inline-block;
+                background-color: white;
+                padding: 10px;
+                border: 1px solid #fff;
+                border-radius: 5px;
+                box-shadow: 3px 3px 3px #888
+            }
+            .button {
+            }
+            .back_button, .button, select {
+                background-color: #555;
+                color: #fff;
+                border: 1px solid #222;
+                border-radius: 5px;
+                padding: 10px;
+                margin: 5px;
+                cursor: pointer;
+            }
+            .button:disabled {
+                opacity: 0.4;
+                    cursor: not-allowed;
+            }
+            .back_button {
+                float: left;
+            }
+            input[type="radio"] {
+                width: 1em;
+                height: 1em;
+                margin: 5px;
+            }
+            #time {
+                margin: 5px;
+                font-weight: bold;
+                font-size: large;
+            }
         </style>
     </head>
     <body>
-        <button class="back_button" onclick="history.back()">Back</button>
         <div id="controls">
+            <button class="back_button" onclick="history.back()">Back</button>
             <label><input type="radio" name="radarOrSat" id="radar" checked="checked">Radar</label>
             <label><input type="radio" name="radarOrSat" id="satellite">Sat</label>
 
             <input type="button" class="button" id="prevFrame" value="&lt;" />
-            <input type="button" class="button" id ="play" value="&gt;&gt;" />
+            <input type="button" class="button" id ="play" value="&gt;&gt;" disabled />
             <input type="button" class="button" id="nextFrame" value="&gt;" />
             <div id="time"></div>
             <!-- <select id="colors" onchange="setColors(); return;"> -->
@@ -86,6 +90,8 @@ body {
         <div id="mapid"></div>
 
         <script>
+            'use strict';
+
             function Radar() {
                 const vars = JSON.parse(localStorage.getItem('vars'));
                 const { lat, lon } = vars;
@@ -93,13 +99,14 @@ body {
                 let radarOrSat = 'radar';
                 const radarLayer = [];
                 const satLayer = [];
+                let mapLayer;// Will refer to either radarLayer or satLayer
                 let currentFrame;
                 let ts;
                 let frame;
                 let colors;
                 let smooth;
                 let snow;
-                let animation = false;
+                let animation = 0;
                 let timeoutIds = [];
 
                 document.getElementById('radar').addEventListener('click', e => setKind(e));
@@ -121,28 +128,31 @@ body {
 
                 function setKind(e) {
                     radarOrSat = e.target.id;
-                    createRadarLayer()
+                    createRadarLayer();
+                    if (currentFrame === mapLayer.length - 1) document.getElementById('play').disabled=true;
                 }
 
                 function nextButton(e) {
+                    let next;
                     e.target.id === 'nextFrame' ? next = 1 : next = -1;
                     changeFrame(next);
                 }
                     
-                function changeFrame(next) {                    
+                function changeFrame(next) {
                     currentFrame += next;
                     if (currentFrame > frame.length-1) currentFrame -= 1;
                     if (currentFrame < 0) currentFrame += 1;
                     renderLayer(currentFrame);
+                    if (currentFrame < mapLayer.length - 1) document.getElementById('play').disabled=false;
                 }
 
                 function playStop() {
                     if (animation) {
                         timeoutIds.forEach(animation => clearTimeout(animation));
-                        animation = false;
+                        animation = 0;
                     }
                     else {
-                        animation = true;
+                        animation = 1;
                         playAnimation();
                     }
                 }
@@ -150,19 +160,20 @@ body {
                 function playAnimation() {
                     if (!animation) return;
                     let i;
-                    function layers(i) {
-                        radarLayer[i].setOpacity(0.7);
+                    function layers(i) { 
+                        mapLayer[i].setOpacity(0.7);
                         displayTime(frame[i].time * 1000);
-                        if (radarLayer[i - 1]) map.removeLayer(radarLayer[i - 1]);
+                        if (mapLayer[i - 1]) map.removeLayer(mapLayer[i - 1]);
                         currentFrame = i;
                     }
-                    for (i = currentFrame; i < radarLayer.length; i++) {
-                        radarLayer[i].addTo(map).setOpacity(0);
+                    for (i = currentFrame; i < mapLayer.length; i++) {
+                        mapLayer[i].addTo(map).setOpacity(0);
                     };
-                    for (let i = currentFrame; i < radarLayer.length; i++) {
+                    for (let i = currentFrame; i < mapLayer.length; i++) {
                         animation = setTimeout(() => layers(i), 1000 * (i - currentFrame));
                         timeoutIds.push(animation);
                     };
+                    animation = 0;
                 }
 
                 function displayTime(t) {
@@ -173,6 +184,7 @@ body {
 
                 function createRadarLayer() {
                     if (radarOrSat === 'radar') {
+                        mapLayer = radarLayer;
                         frame = data.radar.past;
                         colors = 8;
                         smooth = 1;
@@ -180,6 +192,7 @@ body {
                         currentFrame = frame.length - 1;
                     }
                     else {
+                        mapLayer = satLayer;
                         frame = data.satellite.infrared;
                         colors = 0;
                         smooth = 0;
@@ -190,15 +203,16 @@ body {
                 }
 
                 function renderLayer(newFrame) {
-                    radarLayer.forEach(layer => map.removeLayer(layer))
+                    radarLayer.forEach(layer => map.removeLayer(layer));
+                    satLayer.forEach(layer => map.removeLayer(layer));
                     if (frame[newFrame]) {                       
-                        radarLayer[newFrame] = 
+                        mapLayer[newFrame] = 
                             new L.TileLayer(`${data.host}${frame[newFrame].path}/256/{z}/{x}/{y}/${colors}/${smooth}_${snow}.png`,
                                 {
                                     tileSize: 256,
                                     opacity: 0.7
                                 });
-                        map.addLayer(radarLayer[newFrame]);
+                        map.addLayer(mapLayer[newFrame]);
                         displayTime(frame[newFrame].time * 1000);
                     }
                 }

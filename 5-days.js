@@ -170,7 +170,7 @@ function dayNight(sr, ss, h) {
     if (lat && lon && appid) {
       displayLoading();
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort('Network error'), 5000);
+      setTimeout(() => controller.abort('Network error'), 5000);
       fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${appid}`,
         { signal: controller.signal })
         .then(response => {
