@@ -9,6 +9,7 @@ const assets = [
   "/weather-app/5-days.js",
   "/weather-app/leaflet.js",
   "/weather-app/leaflet.css",
+  "/weather-app/hash.js",
   "/weather-app/radar.html",
   "/weather-app/PNG/01d.png",
   "/weather-app/PNG/01n.png",

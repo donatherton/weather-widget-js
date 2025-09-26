@@ -1,7 +1,7 @@
 "use strict"
 
 function FiveDays() {
-  const appid = getAppid();
+  const hash = getHash();
 
   const loader = document.getElementById('loading');
 
@@ -167,21 +167,30 @@ function dayNight(sr, ss, h) {
   }
 
   function callApi() {
-    if (lat && lon && appid) {
-      displayLoading();
-      const controller = new AbortController();
-      setTimeout(() => controller.abort('Network error'), 5000);
-      fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${appid}`,
-        { signal: controller.signal })
-        .then(response => {
-          hideLoading();
-          if (!response.ok) {
-            throw new Error(`Network response not ok: ${response.statusText}`);
-          }
-          return response.json();
-        })
-        .then(result => initWidget(result))
-        .catch(err => alert(`Error: ${err}`))
+    if (lat && lon && hash) {
+      displayLoading();   
+      const apiRequest = new XMLHttpRequest();
+          apiRequest.open("GET", `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${hash}`, true);
+          apiRequest.onload = () => {
+              hideLoading();
+              initWidget(JSON.parse(apiRequest.response));
+          };
+          apiRequest.send();
+
+      //displayLoading();
+      //const controller = new AbortController();
+      //setTimeout(() => controller.abort('Network error'), 5000);
+      //fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&hash=${hash}`,
+      //  { signal: controller.signal })
+      //  .then(response => {
+      //    hideLoading();
+      //    if (!response.ok) {
+      //      throw new Error(`Network response not ok: ${response.statusText}`);
+      //    }
+      //    return response.json();
+      //  })
+      //  .then(result => initWidget(result))
+      //  .catch(err => alert(`Error: ${err}`))
     }
   }
 }

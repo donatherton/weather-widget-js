@@ -1,7 +1,7 @@
 "use strict";
 
 function Widget() {
-  const appid = getAppid();
+  const hash = getHash();
   // Get location from local storage if it's there, defaults if not
   const vars = JSON.parse(localStorage.getItem('vars')) || {"lat": 50.15, "lon": -5.07, "place": "Falmouth"};
   // If units in storage ok or set defaults
@@ -119,7 +119,6 @@ function Widget() {
       `${warnings}<p><a href='hourly.html'>Hourly 48h</a>
          <a href="5-days.html">3 hourly 5 days</a>
          <a href="radar.html">Radar</a>
-         <a href="ventusky.html">Ventusky</a></p>
          <div id="tempPrefs">
           ${tempPrefsDiv}
          </div>
@@ -239,8 +238,8 @@ function Widget() {
     const controller = new AbortController();
     setTimeout(() => controller.abort('Network error'), 5000);
 
-    if (loc && appid) {
-      fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${appid}`,
+    if (loc && hash) {
+      fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${hash}`,
         { signal: controller.signal })
         .then(response => {
           hideLoading();
@@ -281,24 +280,34 @@ function Widget() {
 
   function callApi() {
     const { lat, lon } = vars;
-    if (lat && lon && appid) {
-      displayLoading();
-      const controller = new AbortController();
-      setTimeout(() => controller.abort('Network error'), 10000);
-      fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${appid}`,
-        { signal: controller.signal })
-        .then(response => {
-          hideLoading();
-          if (!response.ok) {
-            throw new Error(`Network response not ok: ${response.statusText}`);
-          }
-          return response.json();
-        })
-        .then(result => {
-          sessionStorage.setItem("weather_data", JSON.stringify(result));
-          initWidget()
-        })
-        .catch(err => alert(`Error: ${err}`))
+    if (lat && lon && hash) {
+            displayLoading();     
+      const apiRequest = new XMLHttpRequest();
+            apiRequest.open("GET", `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${hash}`, true);
+            apiRequest.onload = () => {
+            hideLoading();
+                sessionStorage.setItem("weather_data", apiRequest.response);
+                initWidget()
+            };
+            apiRequest.send();
+
+      //displayLoading();
+      //const controller = new AbortController();
+      //setTimeout(() => controller.abort('Network error'), 10000);
+      //fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${hash}`,
+      //  { signal: controller.signal })
+      //  .then(response => {
+      //    hideLoading();
+      //    if (!response.ok) {
+      //      throw new Error(`Network response not ok: ${response.statusText}`);
+      //    }
+      //    return response.json();
+      //  })
+      //  .then(result => {
+      //    sessionStorage.setItem("weather_data", JSON.stringify(result));
+      //    initWidget()
+      //  })
+      //  .catch(err => alert(`Error: ${err}`))
     }
   }
 }
