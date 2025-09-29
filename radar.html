@@ -72,7 +72,7 @@
             <label><input type="radio" name="radarOrSat" id="satellite">Sat</label>
 
             <input type="button" class="button" id="prevFrame" value="&lt;" />
-            <input type="button" class="button" id ="play" value="&gt;&gt;" disabled />
+        <input type="button" class="button" id ="play" value="&gt;&gt;" />
             <input type="button" class="button" id="nextFrame" value="&gt;" />
             <div id="time"></div>
             <!-- <select id="colors" onchange="setColors(); return;"> -->
@@ -130,7 +130,6 @@
                     radarOrSat = e.target.id;
                     createRadarLayer();
                     animation = 0;
-                    if (currentFrame === mapLayer.length - 1) document.getElementById('play').disabled=true;
                 }
 
                 function nextButton(e) {
@@ -145,7 +144,6 @@
                     if (currentFrame < 0) currentFrame += 1;
                     renderLayer(currentFrame);
                     animation = 0;
-                    if (currentFrame < mapLayer.length - 1) document.getElementById('play').disabled=false;
                 }
 
                 function playStop() {
@@ -154,6 +152,12 @@
                         animation = 0;
                     }
                     else {
+                        if (currentFrame === mapLayer.length - 1) {
+                            currentFrame = 0;
+                            for (let i = mapLayer.length - 1; i >= 0; i--) {
+                                renderLayer(i);
+                            }
+                        }
                         for (let i = currentFrame; i < mapLayer.length; i++) {
                         mapLayer[i].addTo(map).setOpacity(0);
                         }
@@ -241,4 +245,5 @@
         </script>
     </body>
 </html>
+
 
