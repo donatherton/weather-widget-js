@@ -20,7 +20,7 @@ function Widget() {
     const tempUnit = units.temp; // Example selected temperature unit
     const tempPrefsDiv = generateRadioButtons(tempPrefs, tempUnit, 'tempUnits');
 
-    const spdPrefs = ['mph', 'kt', 'Bf'];
+    const spdPrefs = ['mph', 'kt', 'kph', 'Bf'];
     const spdUnit = units.speed; // Example selected speed unit
     const spdPrefsDiv = generateRadioButtons(spdPrefs, spdUnit, 'spdUnits');
 
@@ -119,6 +119,7 @@ function Widget() {
       `${warnings}<p><a href='hourly.html'>Hourly 48h</a>
          <a href="5-days.html">3 hourly 5 days</a>
          <a href="radar.html">Radar</a>
+         <a href ="ventusky.html">Ventusky</a>
          <div id="tempPrefs">
           ${tempPrefsDiv}
          </div>
@@ -165,6 +166,7 @@ function Widget() {
     switch (spdUnit) {
       case ('mph'): s = spd * 2.236936; break;
       case ('kt'): s = spd * 1.944; break;
+      case ('kph'): s = spd * 3.6; break;
       case ('Bf'): s = (spd / 0.836) ** (2 / 3);
     }
     return s;

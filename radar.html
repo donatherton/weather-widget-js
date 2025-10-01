@@ -117,7 +117,7 @@
 
                 const map = L.map('mapid', { maxZoom: 10, zoomControl: false}).setView([lat, lon], 6);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+                    attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors | Radar data &copy; <a href="https://rainviewer.com">RainViewer</a>'
                 }).addTo(map);
                 const mark = new L.CircleMarker([lat, lon]).addTo(map);
                 L.control.zoom({
@@ -152,7 +152,7 @@
                         animation = 0;
                     }
                     else {
-                        if (currentFrame === mapLayer.length - 1) {
+                        if (currentFrame >= mapLayer.length - 1) {
                             currentFrame = 0;
                             for (let i = mapLayer.length - 1; i >= 0; i--) {
                                 renderLayer(i);
@@ -173,6 +173,7 @@
                         if (mapLayer[currentFrame - 1]) map.removeLayer(mapLayer[currentFrame - 1]);
                         currentFrame += 1;
                         animation = setTimeout(() => playAnimation(), 1000);
+                        if (currentFrame === mapLayer.length) animation = 0; // Detect anination end
                     }
                 }
 
@@ -202,18 +203,20 @@
                     renderLayer(currentFrame);
                 }
 
-                function renderLayer(newFrame) {
+                function renderLayer(newFrame) { 
                     radarLayer.forEach(layer => map.removeLayer(layer));
                     satLayer.forEach(layer => map.removeLayer(layer));
-                    if (frame[newFrame]) {                       
-                        mapLayer[newFrame] = 
+                    if (frame[newFrame]) {                                              
+                        if (!mapLayer[newFrame]) {
+                            mapLayer[newFrame] = 
                             new L.TileLayer(`${data.host}${frame[newFrame].path}/256/{z}/{x}/{y}/${colors}/${smooth}_${snow}.png`,
                                 {
                                     tileSize: 256,
                                     opacity: 0.7
                                 });
+                        };
                         map.addLayer(mapLayer[newFrame]);
-                        displayTime(frame[newFrame].time);
+                        displayTime(frame[newFrame].time);                
                     }
                 }
 
