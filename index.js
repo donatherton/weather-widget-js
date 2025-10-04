@@ -207,7 +207,7 @@ function Widget() {
         let end = new Date(warning.end * 1000);
         end = `${dayArray[end.getDay()]}, ${end.getHours().toString().padStart(2, '0')}hrs`;
         const event = `<strong>${warning.event}</strong>`;
-        const desc = warning.description.replace(/\n/g, '<br>');
+        const desc = warning.description.replace(/\n/g, '');
         const warningText = `<p><strong>Weather warning</strong></p>
                             <p>${start} - ${end}</p>
                             <p>${event}</p>
