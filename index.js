@@ -119,7 +119,6 @@ function Widget() {
       `${warnings}<p><a href='hourly.html'>Hourly 48h</a>
          <a href="5-days.html">3 hourly 5 days</a>
          <a href="radar.html">Radar</a>
-         <a href ="ventusky.html">Ventusky</a>
          <div id="tempPrefs">
           ${tempPrefsDiv}
          </div>
@@ -285,7 +284,7 @@ function Widget() {
     if (lat && lon && hash) {
             displayLoading();     
       const apiRequest = new XMLHttpRequest();
-            apiRequest.open("GET", `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${hash}`, true);
+            apiRequest.open("GET", `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely&units=metric&appid=${hash}`, true);
             apiRequest.onload = () => {
             hideLoading();
                 sessionStorage.setItem("weather_data", apiRequest.response);
