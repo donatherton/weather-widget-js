@@ -35,9 +35,7 @@
                 border-radius: 5px;
                 box-shadow: 3px 3px 3px #888
             }
-            .button {
-            }
-            .back_button, .button, select {
+            .back_button, .button {
                 background-color: #555;
                 color: #fff;
                 border: 1px solid #222;
@@ -46,12 +44,8 @@
                 margin: 5px;
                 cursor: pointer;
             }
-            .button:disabled {
-                opacity: 0.4;
-                    cursor: not-allowed;
-            }
-            .back_button {
-                float: left;
+            #play {
+               width: 3rem;
             }
             input[type="radio"] {
                 width: 1em;
@@ -71,21 +65,10 @@
             <label><input type="radio" name="radarOrSat" id="radar" checked="checked">Radar</label>
             <label><input type="radio" name="radarOrSat" id="satellite">Sat</label>
 
-            <input type="button" class="button" id="prevFrame" value="&lt;" />
-        <input type="button" class="button" id ="play" value="&gt;&gt;" />
-            <input type="button" class="button" id="nextFrame" value="&gt;" />
+            <input type="button" class="button" id="prevFrame" value="<" />
+            <input type="button" class="button" id ="play" value=">>" />
+            <input type="button" class="button" id="nextFrame" value=">" />
             <div id="time"></div>
-            <!-- <select id="colors" onchange="setColors(); return;"> -->
-            <!--     <option value="0">Black and White Values</option> -->
-            <!--     <option value="1">Original</option> -->
-            <!--     <option value="2">Universal Blue</option> -->
-            <!--     <option value="3">TITAN</option> -->
-            <!--     <option value="4">The Weather Channel</option> -->
-            <!--     <option value="5">Meteored</option> -->
-            <!--     <option value="6">NEXRAD Level-III</option> -->
-            <!--     <option value="7">RAINBOW @ SELEX-SI</option> -->
-            <!--     <option value="8" selected="selected">Dark Sky</option> -->
-            <!-- </select> -->
         </div>
         <div id="mapid"></div>
 
@@ -108,12 +91,13 @@
                 let snow;
                 let animation = 0;
                 let timeoutIds = [];
+                const playBtn = document.getElementById('play');
 
                 document.getElementById('radar').addEventListener('click', e => setRadarOrSat(e));
                 document.getElementById('satellite').addEventListener('click', e => setRadarOrSat(e));
                 document.getElementById('prevFrame').addEventListener('click', e => nextButton(e));
                 document.getElementById('nextFrame').addEventListener('click', e => nextButton(e));
-                document.getElementById('play').addEventListener('click', playStop);
+                playBtn.addEventListener('click', playStop);
 
                 const map = L.map('mapid', { maxZoom: 10, zoomControl: false}).setView([lat, lon], 6);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -150,6 +134,7 @@
                     if (animation) {
                         clearTimeout(animation);
                         animation = 0;
+                        document.getElementById('play').value = '>>';
                     }
                     else {
                         if (currentFrame >= mapLayer.length - 1) {
@@ -168,12 +153,17 @@
 
                 function playAnimation() { 
                     if (animation && currentFrame < mapLayer.length) {
+                        playBtn.value = '||';
                         mapLayer[currentFrame].setOpacity(0.7);
                         displayTime(frame[currentFrame].time);
                         if (mapLayer[currentFrame - 1]) map.removeLayer(mapLayer[currentFrame - 1]);
                         currentFrame += 1;
                         animation = setTimeout(() => playAnimation(), 1000);
-                        if (currentFrame === mapLayer.length) animation = 0; // Detect anination end
+                        // Detect anination end
+                        if (currentFrame === mapLayer.length) {
+                            animation = 0;
+                            playBtn.value = '>>';
+                        }
                     }
                 }
 
