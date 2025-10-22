@@ -50,8 +50,49 @@ function Widget() {
     const sunset = new Date((data.sunset + result.timezone_offset) * 1000);
     const sunsetHour = sunset.getUTCHours().toString().padStart(2, '0');
     const sunsetMin = sunset.getMinutes().toString().padStart(2, '0');
-    let warnings;
+    let warnings = '';
     result.alerts ? warnings = formatWarnings(result.alerts) : warnings = '';
+
+    let forecastTable = '';
+    
+    // 7 day forecast;
+    data = result.daily;
+
+    for (let i = 0; i < 5; i++) {
+      d = new Date(data[i].dt * 1000).getDay();
+      d = dayArray[d];
+
+      const tempMax = convertTemp(data[i].temp.max, tempUnit).toFixed(0);
+      const tempMin = convertTemp(data[i].temp.min, tempUnit).toFixed(0);
+      const dailyDesc = data[i].weather[0].description.toUpperCase();
+      const dailyIcon = data[i].weather[0].icon;
+      const dailyWindSpd = convertSpd(data[i].wind_speed, spdUnit).toFixed(0);
+      const dailyGust = calcGust(data[i].wind_gust, spdUnit);
+      const dailyWindDir = getWndDir(data[i].wind_deg);
+      let rain = '';
+      data[i].rain ? rain = data[i].rain.toFixed(1) : rain = '0';
+      const POP = Math.round(data[i].pop * 100);
+      const dailyPres = Math.round(data[i].pressure);
+      const summary = data[i].summary;
+
+      forecastTable +=
+        `<td><div>${d}</div>
+         <div class="tooltip"><span class="tooltiptext">Min/max temp</span>${tempMax}/${tempMin}&deg;${tempUnit}</div>
+         <div class="tooltip"><span class="tooltiptext">${dailyDesc}</span>
+         <img src="PNG/${dailyIcon}.png"
+           width="30" height="30"
+           alt="${dailyDesc}">       
+         </div>
+         <div class="tooltip"><span class="tooltiptext">Wind speed/gust</span>${dailyWindSpd}${dailyGust}${spdUnit}</div>
+         <div class="tooltip"><span class="tooltiptext">Wind direction</span>${dailyWindDir}</div>
+         <div class="tooltip"><span class="tooltiptext">Chance of rain</span>${POP}&percnt;</div>
+         <div class="tooltip"><span class="tooltiptext">Amount of rain</span>${rain}mm</div>
+         <div class="tooltip"><span class="tooltiptext">Pressure</span>${dailyPres}mb</div>
+         <div class="tooltip"><span class="tooltiptext">${summary}</span>Summary</div>
+       `;
+    }
+
+    document.getElementById('searchForm').addEventListener('submit', searchLocation);
 
     document.getElementById('container').innerHTML =
       `<table><tbody>
@@ -70,56 +111,17 @@ function Widget() {
         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
         <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
         </svg>
-      </div>
-      </td></tr>
-      <tr id="forecast">`;
-    document.getElementById('searchForm').addEventListener('submit', searchLocation);
-
-    // 7 day forecast;
-    data = result.daily;
-
-    document.getElementById('forecast').innerHTML = '';
-
-    for (let i = 0; i < 5; i++) {
-      d = new Date(data[i].dt * 1000).getDay();
-      d = dayArray[d];
-
-      const tempMax = convertTemp(data[i].temp.max, tempUnit).toFixed(0);
-      const tempMin = convertTemp(data[i].temp.min, tempUnit).toFixed(0);
-      const dailyDesc = data[i].weather[0].description.toUpperCase();
-      const dailyIcon = data[i].weather[0].icon;
-      const dailyWindSpd = convertSpd(data[i].wind_speed, spdUnit).toFixed(0);
-      const dailyGust = calcGust(data[i].wind_gust, spdUnit);
-      const dailyWindDir = getWndDir(data[i].wind_deg);
-      let rain;
-      data[i].rain ? rain = data[i].rain.toFixed(1) : rain = '0';
-      const POP = Math.round(data[i].pop * 100);
-      const dailyPres = Math.round(data[i].pressure);
-      const summary = data[i].summary;
-
-      document.getElementById('forecast').innerHTML +=
-        `<td><table><tr><td>${d}</td></tr>
-         <tr><td class="tooltip"><span class="tooltiptext">Min/max temp</span>${tempMax}/${tempMin}&deg;${tempUnit}</td></tr>
-         <tr><td class="tooltip"><span class="tooltiptext">${dailyDesc}</span>
-         <img src="PNG/${dailyIcon}.png"
-         width="30" height="30"
-         alt="${dailyDesc}">       
-         </td></tr>
-         <tr><td class="tooltip"><span class="tooltiptext">Wind speed/gust</span>${dailyWindSpd}${dailyGust}${spdUnit}</td></tr>
-         <tr><td class="tooltip"><span class="tooltiptext">Wind direction</span>${dailyWindDir}</td></tr>
-         <tr><td class="tooltip"><span class="tooltiptext">Chance of rain</span>${POP}&percnt;</td></tr>
-         <tr><td class="tooltip"><span class="tooltiptext">Amount of rain</span>${rain}mm</td></tr>
-         <tr><td class="tooltip"><span class="tooltiptext">Pressure</span>${dailyPres}mb</td></tr>
-         <tr><td class="tooltip"><span class="tooltiptext">${summary}</span>Summary</td></tr>
-       </table>`;
-    }
-    document.getElementById('container').innerHTML += `</td></tr></tbody></table></div>`;
+        </div>
+        </td></tr>
+        <tr>${forecastTable}</tr>
+        </td></tr></tbody>
+      </table>
+      </div>`;
 
     document.getElementById('footer').innerHTML =
       `${warnings}<p><a href='hourly.html'>Hourly 48h</a>
          <a href="5-days.html">3 hourly 5 days</a>
          <a href="radar.html">Radar</a>
-         <a href ="ventusky.html">Ventusky</a>
          <div id="tempPrefs">
           ${tempPrefsDiv}
          </div>
@@ -146,7 +148,7 @@ function Widget() {
   }
 
   function calcGust(gust, spdUnit) {
-    let g;
+    let g = '';
     gust > 0 ? g = `/${convertSpd(gust, spdUnit).toFixed(0)}` : g = '';
     return g;
   }
@@ -162,7 +164,7 @@ function Widget() {
   }
 
   function convertSpd(spd, spdUnit) {
-    let s;
+    let s = 0;
     switch (spdUnit) {
       case ('mph'): s = spd * 2.236936; break;
       case ('kt'): s = spd * 1.944; break;
@@ -173,7 +175,7 @@ function Widget() {
   }
 
   function convertTemp(temp, tempUnit) { //console.log(tempUnit);
-    let t;
+    let t = 0;
     if (tempUnit === 'F') {
       t = ((temp * 1.8) + 32);
     }

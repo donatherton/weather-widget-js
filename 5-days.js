@@ -10,7 +10,6 @@ function FiveDays() {
 
   const { lat, lon, place } = vars;
 
-  initTable();
   callApi();
 
   // Show spinner during fetch
@@ -27,7 +26,7 @@ function FiveDays() {
   }
 
 function dayNight(sr, ss, h) {
-    let dn;
+    let dn = '';
     if (sr <= h && h <= ss) { dn = '-d'; } else { dn = '-n'; }
     return dn;
   }
@@ -75,7 +74,7 @@ function dayNight(sr, ss, h) {
   }
 
   function convertSpd(spd) {
-    let s;
+    let s = 0;
     if (units.speed === 'kt') {
       s = spd * 1.944;
     } else if (units.speed == 'mph') {
@@ -87,7 +86,7 @@ function dayNight(sr, ss, h) {
   }
 
   function convertTemp(temp) {
-    let t;
+    let t = 0;
     if (units.temp === 'F') {
       t = ((temp * 1.8) + 32);
     }
@@ -98,6 +97,8 @@ function dayNight(sr, ss, h) {
   }
 
   function initWidget(data) {
+    let forecastTable = '';
+
     let sunrise = new Date((data.city.sunrise + data.city.timezone) * 1000);
     let sunset = new Date((data.city.sunset + data.city.timezone) * 1000);
     sunrise = new Date(sunrise);
@@ -115,11 +116,11 @@ function dayNight(sr, ss, h) {
       let cloud = data.list[i].clouds.all;
       const wndSpd = convertSpd(data.list[i].wind.speed).toFixed(0);
       const wsp = wndSpdColour(data.list[i].wind.speed);
-      let gust;
+      let gust = '';
       data.list[i].wind.gust ? gust = '/' + convertSpd(data.list[i].wind.gust).toFixed(0) : gust = '';
       let wndDir = getWndDir(data.list[i].wind.deg);
       let prs = data.list[i].main.pressure;
-      let rain;
+      let rain = '';
       data.list[i]['rain'] ? rain = `<b>${data.list[i]['rain']['3h'].toFixed(1)}mm</b>` : rain = '0mm';
 
       time = new Date(time);
@@ -128,20 +129,17 @@ function dayNight(sr, ss, h) {
       const day = days[time.getDay()];
 
       const dn = dayNight(Number(sunriseHour), Number(sunsetHour), ftime);
-      let dnColour;
+      let dnColour = '';
       if (dn === '-d') dnColour = 'style="background-color:#fff"';
       else if (dn === '-n') dnColour = 'style="background-color:#ddd"';
 
-      document.getElementById('forecast').innerHTML +=
+      forecastTable +=
         `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
            <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${units.temp}</strong></td>
            <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
            <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
            <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">${wndSpd}${gust}${units.speed}</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
     }
-  }
-
-  function initTable() {
     document.getElementById('container').innerHTML = 
       `<table>
       <thead>
@@ -159,10 +157,9 @@ function dayNight(sr, ss, h) {
           <td>Pres</td>
         </tr>
       </thead>
-      <tbody id="forecast">`;
-
-    document.getElementById('container').innerHTML += 
-      `</tbody>
+      <tbody>
+        ${forecastTable}
+      </tbody>
    </table>`;
   }
 

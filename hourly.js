@@ -5,11 +5,10 @@ function Hourly() {
   const place = JSON.parse(localStorage.getItem('vars')).place;
   const units = JSON.parse(localStorage.getItem('units'));
 
-  initTable();
   initWidget(sessionStorage.getItem('weather_data'));
 
   function dayNight(sr, ss, h) {
-    let dn;
+    let dn = '';
     if (sr <= h && h <= ss) { dn = '-d'; } else { dn = '-n'; }
     return dn;
   }
@@ -57,7 +56,7 @@ function Hourly() {
   }
 
   function convertSpd(spd) {
-    let s;
+    let s = 0;
     if (units.speed === 'kt') {
       s = spd * 1.944;
     } else if (units.speed == 'mph') {
@@ -69,7 +68,7 @@ function Hourly() {
   }
 
   function convertTemp(temp) {
-    let t;
+    let t = 0;
     if (units.temp === 'F') {
       t = ((temp * 1.8) + 32);
     }
@@ -81,6 +80,7 @@ function Hourly() {
 
   function initWidget(result) {
     const data = JSON.parse(result);
+    let forecastTable = '';
 
     const fc = data.hourly;
 
@@ -93,10 +93,10 @@ function Hourly() {
       const wndSpd = convertSpd(fc[i].wind_speed).toFixed(0);
       const wsp = wndSpdColour(fc[i].wind_speed);
       const wndDir = fc[i].wind_deg;
-      let gust;
+      let gust = '';
       fc[i].wind_gust ? gust = `/${convertSpd(fc[i].wind_gust).toFixed(0)}` : gust = '';
       const pres = fc[i].pressure;
-      let rain;
+      let rain = '';
       fc[i].rain ? rain = `<b>${fc[i].rain['1h'].toFixed(1)}mm</b>` : rain = '0mm';
       const cloud = fc[i].clouds;
 
@@ -114,14 +114,14 @@ function Hourly() {
       const sunsetHour = sunset.getHours().toString().padStart(2, 0);
 
       const dn = dayNight(Number(sunriseHour), Number(sunsetHour), ftime);
-      let dnColour;
+      let dnColour = '';
       if (dn === '-d') {
         dnColour = 'style="background-color:#fff"';
       } else if (dn === '-n') {
         dnColour = 'style="background-color:#ddd"';
       }
 
-      document.getElementById('forecast').innerHTML +=
+      forecastTable +=
         `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
           <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${units.temp}</strong></td>
           <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
@@ -129,31 +129,28 @@ function Hourly() {
           <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">
     ${wndSpd}${gust}${units.speed}</td><td>${getWndDir(wndDir)}</td><td>${pres}mb</td></tr>`;
     }
-  }
 
-  function initTable() {
     document.getElementById('container').innerHTML = 
-      `<table>
-      <thead>
-        <tr><td colspan="3"><button class="back_button" onclick="history.back()">Go back</button></td>
-          <td colspan="6"><h3>48 hour forecast for ${place}</h3></td></tr>
-        <tr>
-          <td></td>
-          <td>Temp</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>Rain</td>
-          <td>Cloud</td>
-          <td>Wind</td>
-          <td>Dir</td>
-          <td>Pres</td>
-        </tr>
-      </thead>
-      <tbody id="forecast">`;
-
-    document.getElementById('container').innerHTML += 
-      `</tbody>
-     </table>`;
+    `<table>
+    <thead>
+      <tr><td colspan="3"><button class="back_button" onclick="history.back()">Go back</button></td>
+        <td colspan="6"><h3>48 hour forecast for ${place}</h3></td></tr>
+      <tr>
+        <td></td>
+        <td>Temp</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>Rain</td>
+        <td>Cloud</td>
+        <td>Wind</td>
+        <td>Dir</td>
+        <td>Pres</td>
+      </tr>
+    </thead>
+    <tbody>
+      ${forecastTable}
+    </tbody>
+   </table>`;
   }
 }
 
