@@ -53,11 +53,49 @@ function Widget() {
     let warnings = '';
     result.alerts ? warnings = formatWarnings(result.alerts) : warnings = '';
 
-    let forecastTable = '';
-    
-    // 7 day forecast;
-    data = result.daily;
+    document.getElementById('searchForm').addEventListener('submit', searchLocation);
 
+    document.getElementById('container').innerHTML =
+      `<table><tbody>
+      <tr><td colspan="3" style="padding:10px;"><h3>${vars.place}</h3>
+      <P><span style="font-size:large;font-weight:bold">${temp}&deg;${tempUnit}</span> f/l ${feelsLike}&deg;${tempUnit}</p>
+      <p style="font-variant:small-caps;">${desc}<br>
+      <img src="PNG/${icon}.png" width="80" height="80" alt="${desc}"></p></td>
+      <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}${spdUnit} ${windDir}<br>
+      Pressure: ${pres}mb<br>
+      Humidity: ${hum}&percnt;</p>
+      <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
+      <p>Updated: ${h}:${m}:${s}</p>
+      <div class="tooltip">
+        <span class="tooltiptext">Hover / tap on items in table below for more info</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+        </svg>
+        </div>
+        </td></tr>
+        <tr>${dailyForecast(result.daily, tempUnit, spdUnit, d)}</tr>
+        </td></tr></tbody>
+      </table>
+      </div>`;
+
+    document.getElementById('footer').innerHTML =
+      `${warnings}<p><a href='hourly.html'>Hourly 48h</a>
+         <a href="5-days.html">3 hourly 5 days</a>
+         <a href="radar.html">Radar</a>
+         <div id="tempPrefs">
+          ${tempPrefsDiv}
+         </div>
+         <div id="spdPrefs">
+          ${spdPrefsDiv}
+         </div>
+       <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>`;
+    document.getElementById('tempUnits').addEventListener('change', changeUnits);
+    document.getElementById('spdUnits').addEventListener('change', changeUnits);
+  }
+  
+  function dailyForecast(data, tempUnit, spdUnit, d) {
+    let forecastTable = '';
     for (let i = 0; i < 5; i++) {
       d = new Date(data[i].dt * 1000).getDay();
       d = dayArray[d];
@@ -88,49 +126,9 @@ function Widget() {
          <div class="tooltip"><span class="tooltiptext">Chance of rain</span>${POP}&percnt;</div>
          <div class="tooltip"><span class="tooltiptext">Amount of rain</span>${rain}mm</div>
          <div class="tooltip"><span class="tooltiptext">Pressure</span>${dailyPres}mb</div>
-         <div class="tooltip"><span class="tooltiptext">${summary}</span>Summary</div>
-       `;
+         <div class="tooltip"><span class="tooltiptext">${summary}</span>Summary</div>`;
     }
-
-    document.getElementById('searchForm').addEventListener('submit', searchLocation);
-
-    document.getElementById('container').innerHTML =
-      `<table><tbody>
-      <tr><td colspan="3" style="padding:10px;"><h3>${vars.place}</h3>
-      <P><span style="font-size:large;font-weight:bold">${temp}&deg;${tempUnit}</span> f/l ${feelsLike}&deg;${tempUnit}</p>
-      <p style="font-variant:small-caps;">${desc}<br>
-      <img src="PNG/${icon}.png" width="80" height="80" alt="${desc}"></p></td>
-      <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}${spdUnit} ${windDir}<br>
-      Pressure: ${pres}mb<br>
-      Humidity: ${hum}&percnt;</p>
-      <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
-      <p>Updated: ${h}:${m}:${s}</p>
-      <div class="tooltip">
-        <span class="tooltiptext">Hover / tap on items in table below for more info</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
-        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-        </svg>
-        </div>
-        </td></tr>
-        <tr>${forecastTable}</tr>
-        </td></tr></tbody>
-      </table>
-      </div>`;
-
-    document.getElementById('footer').innerHTML =
-      `${warnings}<p><a href='hourly.html'>Hourly 48h</a>
-         <a href="5-days.html">3 hourly 5 days</a>
-         <a href="radar.html">Radar</a>
-         <div id="tempPrefs">
-          ${tempPrefsDiv}
-         </div>
-         <div id="spdPrefs">
-          ${spdPrefsDiv}
-         </div>
-       <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>`;
-    document.getElementById('tempUnits').addEventListener('change', changeUnits);
-    document.getElementById('spdUnits').addEventListener('change', changeUnits);
+    return forecastTable;
   }
 
   // Show spinner during fetch
