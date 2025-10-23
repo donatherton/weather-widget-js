@@ -51,7 +51,7 @@ function Widget() {
     const sunsetHour = sunset.getUTCHours().toString().padStart(2, '0');
     const sunsetMin = sunset.getMinutes().toString().padStart(2, '0');
     let warnings = '';
-    result.alerts ? warnings = formatWarnings(result.alerts) : warnings = '';
+    if (result.alerts) warnings = formatWarnings(result.alerts);
 
     document.getElementById('searchForm').addEventListener('submit', searchLocation);
 
@@ -92,6 +92,7 @@ function Widget() {
        <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>`;
     document.getElementById('tempUnits').addEventListener('change', changeUnits);
     document.getElementById('spdUnits').addEventListener('change', changeUnits);
+    toggleWarnings(document.querySelector('.warning-btn')); 
   }
   
   function dailyForecast(data, tempUnit, spdUnit, d) {
@@ -199,8 +200,22 @@ function Widget() {
     initWidget();
   }
 
+  function toggleWarnings(warningBtn) {
+    if (!warningBtn) return;
+    warningBtn.addEventListener('click', () => {
+      Array.from(document.querySelectorAll('.warning-txt'))
+        .forEach(w => {
+          if (w.style.display === 'none') {
+            w.style.display = 'block'
+          } else {
+            w.style.display = 'none'
+          }
+        });
+    });
+  }
+
   function formatWarnings(warnings) {
-    let warningsText = '';
+    let warningsText = '<button class="warning-btn" title="Click to view">Weather warning</button>';
     warnings.forEach(warning => {
       try {
         let start = new Date(warning.start * 1000);
@@ -209,11 +224,12 @@ function Widget() {
         end = `${dayArray[end.getDay()]}, ${end.getHours().toString().padStart(2, '0')}hrs`;
         const event = `<strong>${warning.event}</strong>`;
         const desc = warning.description.replace(/\n/g, '');
-        const warningText = `<p><strong>Weather warning</strong></p>
-                            <p>${start} - ${end}</p>
-                            <p>${event}</p>
-                            <p>${desc}</p>`
-        warningsText += warningText;
+        const warningText = `<div class="warning-txt" style="display:none">
+                              <p>${event}</p>
+                              <p>${start} - ${end}</p>
+                              <p>${desc}</p>
+                            </div>`
+        warningsText += warningText;        
       }
       catch(err) {
         console.log(err);
