@@ -215,7 +215,7 @@ function Widget() {
   }
 
   function formatWarnings(warnings) {
-    let warningsText = '<button class="warning-btn" title="Click to view">Weather warning</button>';
+    let warningsText = '<button class="warning-btn" title="Click to view">Weather Warning</button>';
     warnings.forEach(warning => {
       try {
         let start = new Date(warning.start * 1000);
