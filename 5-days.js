@@ -1,53 +1,47 @@
 "use strict"
 
-function FiveDays() {
-  const hash = getHash();
-
-  const loader = document.getElementById('loading');
-
-  const vars = JSON.parse(localStorage.getItem('vars'));
-  const units = JSON.parse(localStorage.getItem('units'));
-
-  const { lat, lon, place } = vars;
-
-  callApi();
+const fiveDays = {
+  hash: getHash(),
+  loader: document.getElementById('loading'),
+  vars: JSON.parse(localStorage.getItem('vars')),
+  units: JSON.parse(localStorage.getItem('units')),
 
   // Show spinner during fetch
-  function displayLoading() {
-    loader.classList.add("display");
+  displayLoading() {
+    this.loader.classList.add("display");
     // to stop loading after some time
     setTimeout(() => {
-        loader.classList.remove("display");
+        this.loader.classList.remove("display");
     }, 5000);
-  }
+  },
   // Hide spinner 
-  function hideLoading() {
-      loader.classList.remove("display");
-  }
+  hideLoading() {
+      this.loader.classList.remove("display");
+  },
 
-function dayNight(sr, ss, h) {
+  dayNight(sr, ss, h) {
     let dn = '';
     if (sr <= h && h <= ss) { dn = '-d'; } else { dn = '-n'; }
     return dn;
-  }
+  },
 
-  function tempColour(temp) {
+  tempColour(temp) {
     const ranges = [-Infinity, 0, 5, 10, 15, 20, 25];
     const colors = ['#00ffff', '#3399ff', '#3366cc', '#3319ff', '#ff6600', '#ff0000', '#993300'];
     for (let i = ranges.length - 1; i >= 0; i--) {
       if (temp >= ranges[i]) return colors[i];
     }
-  }
+  },
 
-  function cloudColour(cloud) {
+  cloudColour(cloud) {
     const ranges = [0, 20, 40, 60, 80];
     const colors = ['#eeeeee', '#dddddd', '#cccccc', '#bbbbbb', '#aaaaaa'];
     for (let i = ranges.length - 1; i >= 0; i--) {
       if (cloud >= ranges[i]) return colors[i];
     }
-  }
+  },
 
-  function wndSpdColour(wndSpd) {
+  wndSpdColour(wndSpd) {
     const ranges = [0, 2, 5, 7, 9, 12, 14, 17, 20, 25];
     const colors = [
       '#888',
@@ -64,39 +58,39 @@ function dayNight(sr, ss, h) {
     for (let i = ranges.length - 1; i >= 0; i--) {
       if (wndSpd >= ranges[i]) return colors[i];
     }
-  }
+  },
 
-  function getWndDir(degrees) {
+  getWndDir(degrees) {
     const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
       'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
     const index = Math.floor(((degrees + 11.25) % 360) / 22.5);
     return directions[index];
-  }
+  },
 
-  function convertSpd(spd) {
+  convertSpd(spd) {
     let s = 0;
-    if (units.speed === 'kt') {
+    if (this.units.speed === 'kt') {
       s = spd * 1.944;
-    } else if (units.speed == 'mph') {
+    } else if (this.units.speed == 'mph') {
       s = spd * 2.236936;
-    } else if (units.speed === 'Bf') {
+    } else if (this.units.speed === 'Bf') {
       s = (spd / 0.836) ** (2 / 3)
     }
     return s;
-  }
+  },
 
-  function convertTemp(temp) {
+  convertTemp(temp) {
     let t = 0;
-    if (units.temp === 'F') {
+    if (this.units.temp === 'F') {
       t = ((temp * 1.8) + 32);
     }
     else {
       t = temp;
     }
     return t;
-  }
+  },
 
-  function initWidget(data) {
+  renderWidget(data) {
     let forecastTable = '';
 
     let sunrise = new Date((data.city.sunrise + data.city.timezone) * 1000);
@@ -108,17 +102,17 @@ function dayNight(sr, ss, h) {
 
     for (let i = 0; i < 40; i++) {
       let time = (data.list[i].dt + data.city.timezone) * 1000;
-      const temp = convertTemp(data.list[i].main.temp - 273.15).toFixed(1);
-      const tbg = tempColour(data.list[i].main.temp -273.15);
+      const temp = this.convertTemp(data.list[i].main.temp - 273.15).toFixed(1);
+      const tbg = this.tempColour(data.list[i].main.temp -273.15);
 
       const symbol = data.list[i].weather[0].icon;
       const cond = data.list[i].weather[0].description;
       let cloud = data.list[i].clouds.all;
-      const wndSpd = convertSpd(data.list[i].wind.speed).toFixed(0);
-      const wsp = wndSpdColour(data.list[i].wind.speed);
+      const wndSpd = this.convertSpd(data.list[i].wind.speed).toFixed(0);
+      const wsp = this.wndSpdColour(data.list[i].wind.speed);
       let gust = '';
-      data.list[i].wind.gust ? gust = '/' + convertSpd(data.list[i].wind.gust).toFixed(0) : gust = '';
-      let wndDir = getWndDir(data.list[i].wind.deg);
+      data.list[i].wind.gust ? gust = '/' + this.convertSpd(data.list[i].wind.gust).toFixed(0) : gust = '';
+      let wndDir = this.getWndDir(data.list[i].wind.deg);
       let prs = data.list[i].main.pressure;
       let rain = '';
       data.list[i]['rain'] ? rain = `<b>${data.list[i]['rain']['3h'].toFixed(1)}mm</b>` : rain = '0mm';
@@ -128,23 +122,23 @@ function dayNight(sr, ss, h) {
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
       const day = days[time.getDay()];
 
-      const dn = dayNight(Number(sunriseHour), Number(sunsetHour), ftime);
+      const dn = this.dayNight(Number(sunriseHour), Number(sunsetHour), ftime);
       let dnColour = '';
       if (dn === '-d') dnColour = 'style="background-color:#fff"';
       else if (dn === '-n') dnColour = 'style="background-color:#ddd"';
 
       forecastTable +=
         `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
-           <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${units.temp}</strong></td>
+           <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${this.units.temp}</strong></td>
            <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
            <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
-           <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">${wndSpd}${gust}${units.speed}</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
+           <td style="background-color: ${this.cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">${wndSpd}${gust}${this.units.speed}</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
     }
     document.getElementById('container').innerHTML = 
       `<table>
       <thead>
         <tr><td colspan="3"><button class="back_button" onclick="history.back()">Go back</button></td>
-          <td colspan="6"><h3>5 day forecast for ${place}</h3></td></tr>
+          <td colspan="6"><h3>5 day forecast for ${this.vars.place}</h3></td></tr>
         <tr>
           <td></td>
           <td>Temp</td>
@@ -161,16 +155,17 @@ function dayNight(sr, ss, h) {
         ${forecastTable}
       </tbody>
    </table>`;
-  }
+  },
 
-  function callApi() {
-    if (lat && lon && hash) {
-      displayLoading();   
+  callApi() {
+    const { lat, lon } = this.vars;
+    if (lat && lon && this.hash) {
+      this.displayLoading();   
       const apiRequest = new XMLHttpRequest();
-          apiRequest.open("GET", `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${hash}`, true);
+          apiRequest.open("GET", `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${this.hash}`, true);
           apiRequest.onload = () => {
-              hideLoading();
-              initWidget(JSON.parse(apiRequest.response));
+              this.hideLoading();
+              this.renderWidget(JSON.parse(apiRequest.response));
           };
           apiRequest.send();
 
@@ -186,10 +181,10 @@ function dayNight(sr, ss, h) {
       //    }
       //    return response.json();
       //  })
-      //  .then(result => initWidget(result))
+      //  .then(result => renderWidget(result))
       //  .catch(err => alert(`Error: ${err}`))
     }
   }
 }
 
-const fiveDays = new FiveDays();
+fiveDays.callApi();

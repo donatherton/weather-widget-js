@@ -1,28 +1,24 @@
 "use strict";
 
-function Widget() {
-  const hash = getHash();
-  // Get location from local storage if it's there, defaults if not
-  const vars = JSON.parse(localStorage.getItem('vars')) || {"lat": 50.15, "lon": -5.07, "place": "Falmouth"};
-  // If units in storage ok or set defaults
-  localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
-  const units = JSON.parse(localStorage.getItem('units'));
-  const loader = document.getElementById('loading');
-  const dayArray = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+/* Check whether data is in storage, save defaults if not */ 
+localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
+localStorage.vars || localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
 
-  initSearchForm();
-  loadUrlParams();
-  saveVars();
-  callApi();
+const widget = {
+  hash: getHash(),
+  vars: JSON.parse(localStorage.getItem('vars')), 
+  units: JSON.parse(localStorage.getItem('units')),
+  loader: document.getElementById('loading'),
+  dayArray: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 
-  function initWidget() {
+  renderWidget() {
     const tempPrefs = ['C', 'F'];
-    const tempUnit = units.temp; // Example selected temperature unit
-    const tempPrefsDiv = generateRadioButtons(tempPrefs, tempUnit, 'tempUnits');
+    const tempUnit = this.units.temp;
+    const tempPrefsDiv = this.generateRadioButtons(tempPrefs, tempUnit, 'tempUnits');
 
     const spdPrefs = ['mph', 'kt', 'kph', 'Bf'];
-    const spdUnit = units.speed; // Example selected speed unit
-    const spdPrefsDiv = generateRadioButtons(spdPrefs, spdUnit, 'spdUnits');
+    const spdUnit = this.units.speed;
+    const spdPrefsDiv = this.generateRadioButtons(spdPrefs, spdUnit, 'spdUnits');
 
     let result = JSON.parse(sessionStorage.getItem('weather_data'));
 
@@ -34,13 +30,13 @@ function Widget() {
     const m = d.getMinutes().toString().padStart(2, '0');
     const s = d.getSeconds().toString().padStart(2, '0');
 
-    const temp = convertTemp(data.temp, tempUnit).toFixed(1);
-    const feelsLike = convertTemp(data.feels_like, tempUnit).toFixed(1);
+    const temp = this.convertTemp(data.temp, tempUnit).toFixed(1);
+    const feelsLike = this.convertTemp(data.feels_like, tempUnit).toFixed(1);
     const desc = data.weather[0].description;
     const icon = data.weather[0].icon;
-    const windSpd = convertSpd(data.wind_speed, spdUnit).toFixed(0);
-    const gust = calcGust(data.wind_gust, spdUnit);        
-    const windDir = getWndDir(data.wind_deg);
+    const windSpd = this.convertSpd(data.wind_speed, spdUnit).toFixed(0);
+    const gust = this.calcGust(data.wind_gust, spdUnit);        
+    const windDir = this.getWndDir(data.wind_deg);
     const pres = data.pressure;
     const hum = data.humidity
 
@@ -51,13 +47,20 @@ function Widget() {
     const sunsetHour = sunset.getUTCHours().toString().padStart(2, '0');
     const sunsetMin = sunset.getMinutes().toString().padStart(2, '0');
     let warnings = '';
-    if (result.alerts) warnings = formatWarnings(result.alerts);
+    if (result.alerts) warnings = this.formatWarnings(result.alerts);
 
-    document.getElementById('searchForm').addEventListener('submit', searchLocation);
+    document.getElementById('search').innerHTML = 
+    `<form id="searchForm">
+      <p><label for="loc">Location search </label>
+      <input id="loc" type="text" name="loc">
+      <input type="submit" name="submit" value="Go"></p>
+     </form>
+     <div id="results"></div>`;
+    document.getElementById('searchForm').addEventListener('submit', (e) => this.searchLocation(e));
 
     document.getElementById('container').innerHTML =
       `<table><tbody>
-      <tr><td colspan="3" style="padding:10px;"><h3>${vars.place}</h3>
+      <tr><td colspan="3" style="padding:10px;"><h3>${this.vars.place}</h3>
       <P><span style="font-size:large;font-weight:bold">${temp}&deg;${tempUnit}</span> f/l ${feelsLike}&deg;${tempUnit}</p>
       <p style="font-variant:small-caps;">${desc}<br>
       <img src="PNG/${icon}.png" width="80" height="80" alt="${desc}"></p></td>
@@ -74,7 +77,7 @@ function Widget() {
         </svg>
         </div>
         </td></tr>
-        <tr>${dailyForecast(result.daily, tempUnit, spdUnit, d)}</tr>
+        <tr>${this.dailyForecast(result.daily, tempUnit, spdUnit, d)}</tr>
         </td></tr></tbody>
       </table>
       </div>`;
@@ -90,24 +93,24 @@ function Widget() {
           ${spdPrefsDiv}
          </div>
        <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>`;
-    document.getElementById('tempUnits').addEventListener('change', changeUnits);
-    document.getElementById('spdUnits').addEventListener('change', changeUnits);
-    toggleWarnings(document.querySelector('.warning-btn')); 
-  }
+    document.getElementById('tempUnits').addEventListener('change', (e) => this.changeUnits(e));
+    document.getElementById('spdUnits').addEventListener('change', (e) => this.changeUnits(e));
+    this.toggleWarnings(document.querySelector('.warning-btn')); 
+  },
   
-  function dailyForecast(data, tempUnit, spdUnit, d) {
+  dailyForecast(data, tempUnit, spdUnit, d) {
     let forecastTable = '';
     for (let i = 0; i < 5; i++) {
       d = new Date(data[i].dt * 1000).getDay();
-      d = dayArray[d];
+      d = this.dayArray[d];
 
-      const tempMax = convertTemp(data[i].temp.max, tempUnit).toFixed(0);
-      const tempMin = convertTemp(data[i].temp.min, tempUnit).toFixed(0);
+      const tempMax = this.convertTemp(data[i].temp.max, tempUnit).toFixed(0);
+      const tempMin = this.convertTemp(data[i].temp.min, tempUnit).toFixed(0);
       const dailyDesc = data[i].weather[0].description.toUpperCase();
       const dailyIcon = data[i].weather[0].icon;
-      const dailyWindSpd = convertSpd(data[i].wind_speed, spdUnit).toFixed(0);
-      const dailyGust = calcGust(data[i].wind_gust, spdUnit);
-      const dailyWindDir = getWndDir(data[i].wind_deg);
+      const dailyWindSpd = this.convertSpd(data[i].wind_speed, spdUnit).toFixed(0);
+      const dailyGust = this.calcGust(data[i].wind_gust, spdUnit);
+      const dailyWindDir = this.getWndDir(data[i].wind_deg);
       let rain = '';
       data[i].rain ? rain = data[i].rain.toFixed(1) : rain = '0';
       const POP = Math.round(data[i].pop * 100);
@@ -130,29 +133,29 @@ function Widget() {
          <div class="tooltip"><span class="tooltiptext">${summary}</span>Summary</div>`;
     }
     return forecastTable;
-  }
+  },
 
   // Show spinner during fetch
-  function displayLoading() {
-      loader.classList.add("display");
+  displayLoading() {
+      this.loader.classList.add("display");
       // to stop loading after some time
-      setTimeout(() => {
-          loader.classList.remove("display");
-      }, 10000);
-  }
+    // setTimeout(() => {
+    //       this.loader.classList.remove("display");
+    //   }, 10000);
+  },
 
   // Hide spinner 
-  function hideLoading() {
-      loader.classList.remove("display");
-  }
+  hideLoading() {
+      this.loader.classList.remove("display");
+  },
 
-  function calcGust(gust, spdUnit) {
+  calcGust(gust, spdUnit) {
     let g = '';
-    gust > 0 ? g = `/${convertSpd(gust, spdUnit).toFixed(0)}` : g = '';
+    gust > 0 ? g = `/${this.convertSpd(gust, spdUnit).toFixed(0)}` : g = '';
     return g;
-  }
+  },
 
-  function generateRadioButtons(prefs, selectedUnit, name) {
+  generateRadioButtons(prefs, selectedUnit, name) {
     let prefsDiv = `<form id="${name}">`;
     for (const pref of prefs) {
       const checked = (pref === selectedUnit) ? 'checked' : '';
@@ -160,9 +163,9 @@ function Widget() {
     }
     prefsDiv += '</form>';
     return prefsDiv;
-  }
+  },
 
-  function convertSpd(spd, spdUnit) {
+  convertSpd(spd, spdUnit) {
     let s = 0;
     switch (spdUnit) {
       case ('mph'): s = spd * 2.236936; break;
@@ -171,9 +174,9 @@ function Widget() {
       case ('Bf'): s = (spd / 0.836) ** (2 / 3);
     }
     return s;
-  }
+  },
 
-  function convertTemp(temp, tempUnit) { //console.log(tempUnit);
+  convertTemp(temp, tempUnit) { //console.log(tempUnit);
     let t = 0;
     if (tempUnit === 'F') {
       t = ((temp * 1.8) + 32);
@@ -182,25 +185,25 @@ function Widget() {
       t = temp;
     }
     return t;
-  }
+  },
 
-  function getWndDir(degrees) {
+  getWndDir(degrees) {
     const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
       'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
     const index = Math.floor(((degrees + 11.25) % 360) / 22.5);
     return directions[index];
-  }
+  },
 
-  function changeUnits(e) {
-    const tmp = units;
+  changeUnits(e) {
+    const tmp = this.units;
     if (e.target.name === 'tempUnits') {
       tmp.temp = e.target.value;
     } else tmp.speed = e.target.value;
     localStorage.setItem('units', JSON.stringify(tmp));
-    initWidget();
-  }
-
-  function toggleWarnings(warningBtn) {
+    this.renderWidget();
+  },
+  
+  toggleWarnings(warningBtn) {
     if (!warningBtn) return;
     warningBtn.addEventListener('click', () => {
       Array.from(document.querySelectorAll('.warning-txt'))
@@ -212,16 +215,16 @@ function Widget() {
           }
         });
     });
-  }
+  },
 
-  function formatWarnings(warnings) {
+  formatWarnings(warnings) {
     let warningsText = '<button class="warning-btn" title="Click to view">Weather Warning</button>';
     warnings.forEach(warning => {
-      try {
+       try {
         let start = new Date(warning.start * 1000);
-        start = `${dayArray[start.getDay()]}, ${start.getHours().toString().padStart(2, '0')}hrs`;
+        start = `${this.dayArray[start.getDay()]}, ${start.getHours().toString().padStart(2, '0')}hrs`;
         let end = new Date(warning.end * 1000);
-        end = `${dayArray[end.getDay()]}, ${end.getHours().toString().padStart(2, '0')}hrs`;
+        end = `${this.dayArray[end.getDay()]}, ${end.getHours().toString().padStart(2, '0')}hrs`;
         const event = `<strong>${warning.event}</strong>`;
         const desc = warning.description.replace(/\n/g, '');
         const warningText = `<div class="warning-txt" style="display:none">
@@ -236,98 +239,78 @@ function Widget() {
       }
     });
       return warningsText;
-  }
+  },
 
-  function getLocation(result) {
-    document.getElementById('results').innerHTML = '';
-
+  getLocation(result) {
     if (result.length > 0) {
       result.forEach(res => {
         document.getElementById('results').innerHTML +=
-          `<p><a href="index.html?lat=${res.lat.toFixed(2)}&lon=${res.lon.toFixed(2)}&place=${res.name || ''}">${res.name} ${res.state || ''} ${res.country || ''}</a></p>`;
+          `<p><a href="javascript:void(0)" onclick="widget.locationSelected('${res.lat}', '${res.lon}', '${res.name}')">${res.name} ${res.state
+              || res.country || ''}</a></p>`;
       });
     } else document.getElementById('results').innerHTML = '<p>No results</p>';
-  }
+  },
 
-  function searchLocation(e) {
+  locationSelected(lat, lon, place) {
+    localStorage.setItem('vars', `{"lat": ${lat}, "lon": ${lon}, "place": "${place}"}`);
+    this.vars = JSON.parse(`{"lat": ${lat}, "lon": ${lon}, "place": "${place}"}`);
+    this.callApi();
+  },
+
+  searchLocation(e) {
     e.preventDefault(); // Needed to stop calling new html doc on submit which cancels fetch
-    displayLoading();
+    this.displayLoading();
     const loc = document.getElementById('loc').value;
     const controller = new AbortController();
     setTimeout(() => controller.abort('Network error'), 5000);
 
-    if (loc && hash) {
-      fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${hash}`,
+    if (loc && this.hash) {
+      fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${this.hash}`,
         { signal: controller.signal })
         .then(response => {
-          hideLoading();
+          this.hideLoading();
           if (!response.ok) {
             throw new Error(`Network response not ok: ${response.statusText}`);
           }
           return response.json();
         })
-        .then(result => getLocation(result))
+        .then(result => this.getLocation(result))
         .catch(err => alert(`Error: ${err}`))
     }
-  }
+  },
 
-  function initSearchForm() {
-    document.getElementById('search').innerHTML = 
-      `<form id="searchForm">
-      <p><label for="loc">Location search </label>
-        <input id="loc" type="text" name="loc">
-        <input type="submit" name="submit" value="Go"></p>
-   </form>
-   <div id="results"></div>`;
-    document.getElementById('searchForm').addEventListener('submit', searchLocation);
-  }
-
-  // If url has parameters (after search) change to those
-  function loadUrlParams() {
-    window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => {
-      vars[key] = decodeURI(value);
-    });
-  };
-
-  function saveVars() {
-    const { lat, lon, place } = vars;
-    if (lat && lon && place) {
-      localStorage.setItem('vars', JSON.stringify(vars));
-    }
-  }
-
-  function callApi() {
-    const { lat, lon } = vars;
-    if (lat && lon && hash) {
-            displayLoading();     
+  callApi() {
+    const { lat, lon } = this.vars;
+    if (lat && lon && this.hash) {
+            this.displayLoading();     
       const apiRequest = new XMLHttpRequest();
-            apiRequest.open("GET", `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely&units=metric&appid=${hash}`, true);
+            apiRequest.open("GET", `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely&units=metric&appid=${this.hash}`, true);
             apiRequest.onload = () => {
-            hideLoading();
+            this.hideLoading();
                 sessionStorage.setItem("weather_data", apiRequest.response);
-                initWidget()
+                this.renderWidget()
             };
             apiRequest.send();
 
-      //displayLoading();
-      //const controller = new AbortController();
-      //setTimeout(() => controller.abort('Network error'), 10000);
+      //displayLoading: () =>;
+      //const controller = new AbortController: () =>;
+      //setTimeout(: () => => controller.abort('Network error'), 10000);
       //fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${hash}`,
       //  { signal: controller.signal })
       //  .then(response => {
-      //    hideLoading();
+      //    hideLoading: () =>;
       //    if (!response.ok) {
       //      throw new Error(`Network response not ok: ${response.statusText}`);
       //    }
-      //    return response.json();
+      //    return response.json: () =>;
       //  })
       //  .then(result => {
       //    sessionStorage.setItem("weather_data", JSON.stringify(result));
-      //    initWidget()
+      //    renderWidget: () =>
       //  })
       //  .catch(err => alert(`Error: ${err}`))
     }
   }
 }
 
-const widget = new Widget();
+widget.callApi();
