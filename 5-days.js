@@ -9,14 +9,10 @@ const fiveDays = {
   // Show spinner during fetch
   displayLoading() {
     this.loader.classList.add("display");
-    // to stop loading after some time
-    setTimeout(() => {
-        this.loader.classList.remove("display");
-    }, 5000);
   },
   // Hide spinner 
   hideLoading() {
-      this.loader.classList.remove("display");
+    this.loader.classList.remove("display");
   },
 
   dayNight(sr, ss, h) {
@@ -137,7 +133,7 @@ const fiveDays = {
     document.getElementById('container').innerHTML = 
       `<table>
       <thead>
-        <tr><td colspan="3"><button class="back_button" onclick="history.back()">Go back</button></td>
+        <tr><td colspan="3"><button class="back_button" onclick="history.back()">Back</button></td>
           <td colspan="6"><h3>5 day forecast for ${this.vars.place}</h3></td></tr>
         <tr>
           <td></td>
@@ -161,28 +157,19 @@ const fiveDays = {
     const { lat, lon } = this.vars;
     if (lat && lon && this.hash) {
       this.displayLoading();   
-      const apiRequest = new XMLHttpRequest();
-          apiRequest.open("GET", `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${this.hash}`, true);
-          apiRequest.onload = () => {
-              this.hideLoading();
-              this.renderWidget(JSON.parse(apiRequest.response));
-          };
-          apiRequest.send();
-
-      //displayLoading();
-      //const controller = new AbortController();
-      //setTimeout(() => controller.abort('Network error'), 5000);
-      //fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&hash=${hash}`,
-      //  { signal: controller.signal })
-      //  .then(response => {
-      //    hideLoading();
-      //    if (!response.ok) {
-      //      throw new Error(`Network response not ok: ${response.statusText}`);
-      //    }
-      //    return response.json();
-      //  })
-      //  .then(result => renderWidget(result))
-      //  .catch(err => alert(`Error: ${err}`))
+      const controller = new AbortController();
+      setTimeout(() => controller.abort('Network error'), 5000);
+      fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${this.hash}`,
+        { signal: controller.signal })
+        .then(response => {
+          this.hideLoading();
+          if (!response.ok) {
+            throw new Error(`Network response not ok: ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then(result => this.renderWidget(result))
+        .catch(err => alert(`Error: ${err}`))
     }
   }
 }

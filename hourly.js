@@ -130,7 +130,7 @@ const hourly = {
     document.getElementById('container').innerHTML = 
     `<table>
       <thead>
-        <tr><td colspan="3"><button class="back_button" onclick="history.back()">Go back</button></td>
+        <tr><td colspan="3"><button class="back_button" onclick="history.back()">Back</button></td>
           <td colspan="6"><h3>48 hour forecast for ${this.place}</h3></td></tr>
         <tr>
           <td></td>

@@ -1,6 +1,5 @@
 "use strict";
-
-/* Check whether data is in storage, save defaults if not */ 
+/* Check whether prefs in storage, save defaults if not */ 
 localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
 localStorage.vars || localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
 
@@ -137,16 +136,12 @@ const widget = {
 
   // Show spinner during fetch
   displayLoading() {
-      this.loader.classList.add("display");
-      // to stop loading after some time
-    // setTimeout(() => {
-    //       this.loader.classList.remove("display");
-    //   }, 10000);
+    this.loader.classList.add("display");
   },
 
   // Hide spinner 
   hideLoading() {
-      this.loader.classList.remove("display");
+    this.loader.classList.remove("display");
   },
 
   calcGust(gust, spdUnit) {
@@ -176,7 +171,7 @@ const widget = {
     return s;
   },
 
-  convertTemp(temp, tempUnit) { //console.log(tempUnit);
+  convertTemp(temp, tempUnit) {
     let t = 0;
     if (tempUnit === 'F') {
       t = ((temp * 1.8) + 32);
@@ -282,33 +277,23 @@ const widget = {
   callApi() {
     const { lat, lon } = this.vars;
     if (lat && lon && this.hash) {
-            this.displayLoading();     
-      const apiRequest = new XMLHttpRequest();
-            apiRequest.open("GET", `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely&units=metric&appid=${this.hash}`, true);
-            apiRequest.onload = () => {
-            this.hideLoading();
-                sessionStorage.setItem("weather_data", apiRequest.response);
-                this.renderWidget()
-            };
-            apiRequest.send();
-
-      //displayLoading: () =>;
-      //const controller = new AbortController: () =>;
-      //setTimeout(: () => => controller.abort('Network error'), 10000);
-      //fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${hash}`,
-      //  { signal: controller.signal })
-      //  .then(response => {
-      //    hideLoading: () =>;
-      //    if (!response.ok) {
-      //      throw new Error(`Network response not ok: ${response.statusText}`);
-      //    }
-      //    return response.json: () =>;
-      //  })
-      //  .then(result => {
-      //    sessionStorage.setItem("weather_data", JSON.stringify(result));
-      //    renderWidget: () =>
-      //  })
-      //  .catch(err => alert(`Error: ${err}`))
+      this.displayLoading();     
+      const controller = new AbortController();
+      setTimeout(() => controller.abort('Network error'), 10000);
+      fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${this.hash}`,
+        { signal: controller.signal })
+        .then(response => {
+          this.hideLoading();
+          if (!response.ok) {
+            throw new Error(`Network response not ok: ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then(result => {
+          sessionStorage.setItem("weather_data", JSON.stringify(result));
+          this.renderWidget()
+        })
+        .catch(err => alert(`Error: ${err}`))
     }
   }
 }
