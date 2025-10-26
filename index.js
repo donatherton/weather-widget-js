@@ -1,7 +1,7 @@
 "use strict";
 /* Check whether prefs in storage, save defaults if not */ 
 localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
-//localStorage.vars || localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
+localStorage.vars || localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
 
 // let x = null;
 // if (x = JSON.parse(localStorage.getItem('vars'))) {
@@ -248,16 +248,18 @@ const widget = {
     document.getElementById('results').innerHTML = '';
     if (result.length > 0) {
       result.forEach(res => {
-        document.getElementById('results').innerHTML +=
-          `<p><a href="javascript:void(0)" onclick="widget.locationSelected('${res.lat}', '${res.lon}', '${res.name}')">${res.name} ${res.state
-              || res.country || ''}</a></p>`;
+        const link = document.createElement('a');
+        link.href = 'javascript:void(0)';
+        link.textContent = `${res.name} ${res.state || res.country}`;
+        document.getElementById('results').append(link);
+        link.addEventListener('click', () => this.locationSelected(res.lat, res.lon, res.name, res.state || res.country));
       });
     } else document.getElementById('results').innerHTML = '<p>No results</p>';
   },
 
-  locationSelected(lat, lon, place) {
-    localStorage.setItem('vars', `{"lat": ${lat}, "lon": ${lon}, "place": "${place}"}`);
-    this.vars = JSON.parse(`{"lat": ${lat}, "lon": ${lon}, "place": "${place}"}`);
+  locationSelected(lat, lon, place, state) {
+    localStorage.setItem('vars', `{"lat": ${lat}, "lon": ${lon}, "place": "${place} ${state}"}`);
+    this.vars = JSON.parse(`{"lat": ${lat}, "lon": ${lon}, "place": "${place} ${state}"}`);
     this.callApi();
   },
 
