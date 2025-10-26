@@ -1,7 +1,15 @@
 "use strict";
 /* Check whether prefs in storage, save defaults if not */ 
 localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
-localStorage.vars || localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
+//localStorage.vars || localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
+
+// let x = null;
+// if (x = JSON.parse(localStorage.getItem('vars'))) {
+//   console.log(x);
+// } else {
+//   localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
+//   x = JSON.parse('{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
+// }
 
 const widget = {
   hash: getHash(),
@@ -237,6 +245,7 @@ const widget = {
   },
 
   getLocation(result) {
+    document.getElementById('results').innerHTML = '';
     if (result.length > 0) {
       result.forEach(res => {
         document.getElementById('results').innerHTML +=

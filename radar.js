@@ -1,6 +1,6 @@
 'use strict';
 
-function Radar() {
+(function Radar() {
     const vars = JSON.parse(localStorage.getItem('vars'));
     const { lat, lon } = vars;
     let data = {};
@@ -136,27 +136,20 @@ function Radar() {
 
     function callApi() {
         //displayLoading();
-        const apiRequest = new XMLHttpRequest();
-        apiRequest.open("GET", "https://api.rainviewer.com/public/weather-maps.json", true);
-        apiRequest.onload = () => {
-            data = JSON.parse(apiRequest.response);
-            createRadarLayer();
-        };
-        apiRequest.send();
-        //fetch(`https://api.rainviewer.com/public/weather-maps.json`)
-        //    .then(response => {
-        //        //hideLoading();
-        //        if (!response.ok) {
-        //            throw new Error(`Network response not ok: ${response.statusText}`);
-        //        }
-        //        return response.json();
-        //    })
-        //    .then(result => {
-        //        data = result;
-        //        createRadarLayer();
-        //    })
-        //.catch(err => alert(`Error: ${err}`));
+        fetch(`https://api.rainviewer.com/public/weather-maps.json`)
+            .then(response => {
+                //hideLoading();
+                if (!response.ok) {
+                    throw new Error(`Network response not ok: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(result => {
+                data = result;
+                createRadarLayer();
+            })
+        .catch(err => alert(`Error: ${err}`));
     }
-}
-const radar = new Radar();
+})()
+//const radar = new Radar();
 
