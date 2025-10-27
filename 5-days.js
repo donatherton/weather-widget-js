@@ -157,10 +157,7 @@ const fiveDays = {
     const { lat, lon } = this.vars;
     if (lat && lon && this.hash) {
       this.displayLoading();   
-      const controller = new AbortController();
-      setTimeout(() => controller.abort('Network error'), 5000);
-      fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${this.hash}`,
-        { signal: controller.signal })
+      fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${this.hash}`)
         .then(response => {
           this.hideLoading();
           if (!response.ok) {

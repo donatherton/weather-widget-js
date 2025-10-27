@@ -3,14 +3,6 @@
 localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
 localStorage.vars || localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
 
-// let x = null;
-// if (x = JSON.parse(localStorage.getItem('vars'))) {
-//   console.log(x);
-// } else {
-//   localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
-//   x = JSON.parse('{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
-// }
-
 const widget = {
   hash: getHash(),
   vars: JSON.parse(localStorage.getItem('vars')), 
@@ -269,7 +261,6 @@ const widget = {
     const loc = document.getElementById('loc').value;
     const controller = new AbortController();
     setTimeout(() => controller.abort('Network error'), 5000);
-
     if (loc && this.hash) {
       fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${this.hash}`,
         { signal: controller.signal })
@@ -289,10 +280,7 @@ const widget = {
     const { lat, lon } = this.vars;
     if (lat && lon && this.hash) {
       this.displayLoading();     
-      const controller = new AbortController();
-      setTimeout(() => controller.abort('Network error'), 10000);
-      fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${this.hash}`,
-        { signal: controller.signal })
+      fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${this.hash}`)
         .then(response => {
           this.hideLoading();
           if (!response.ok) {

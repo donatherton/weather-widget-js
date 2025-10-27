@@ -80,6 +80,15 @@ const hourly = {
     let forecastTable = '';
 
     const fc = data.hourly;
+    
+    let sunrise = data.current.sunrise + data.timezone_offset;
+    let sunset = data.current.sunset + data.timezone_offset;
+    sunrise = new Date(sunrise * 1000);
+    const sunriseHour = sunrise.getUTCHours().toString().padStart(2, 0);
+    sunset = new Date(sunset * 1000);
+    const sunsetHour = sunset.getUTCHours().toString().padStart(2, 0);
+
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
 
     for (let i = 0; i < 48; i++) {
       const ts = fc[i].dt + data.timezone_offset;
@@ -97,18 +106,9 @@ const hourly = {
       fc[i].rain ? rain = `<b>${fc[i].rain['1h'].toFixed(1)}mm</b>` : rain = '0mm';
       const cloud = fc[i].clouds;
 
-      let sunrise = data.current.sunrise;
-      let sunset = data.current.sunset;
-
       const time = new Date(ts * 1000);
       const ftime = time.getHours().toString().padStart(2, 0);
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
       const day = days[time.getDay()];
-
-      sunrise = new Date(sunrise * 1000);
-      const sunriseHour = sunrise.getHours().toString().padStart(2, 0);
-      sunset = new Date(sunset * 1000);
-      const sunsetHour = sunset.getHours().toString().padStart(2, 0);
 
       const dn = this.dayNight(Number(sunriseHour), Number(sunsetHour), ftime);
       let dnColour = '';
