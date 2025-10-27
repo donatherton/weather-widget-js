@@ -5,7 +5,6 @@
     <title>Weather</title>
     <meta name="viewport" content="width=device-width">
     <link rel="manifest" href="manifest.json">
-    <script src="hash.js"></script>
     <style>
       * {
         box-sizing: border-box;
@@ -25,6 +24,8 @@
         background-color: transparent;
       }
       #main {
+        display: inline-block; /* These 2 lines seem to be */
+        margin: auto; /*necessary for older mobile browsers */
         padding: 10px;
         background-image: url("PNG/fulmine.jpg");
         background-position: center;
@@ -171,6 +172,6 @@
         }
       </script>      
     </div>
-    <script src="index.js"></script>
+    <script type="module" src="index.js"></script>
   </body>
 </html>

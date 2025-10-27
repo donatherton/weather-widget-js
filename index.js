@@ -1,10 +1,12 @@
+import utils from './utils.js';
+
 "use strict";
 /* Check whether prefs in storage, save defaults if not */ 
 localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
 localStorage.vars || localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
 
 const widget = {
-  hash: getHash(),
+  hash: utils.getHash(),
   vars: JSON.parse(localStorage.getItem('vars')), 
   units: JSON.parse(localStorage.getItem('units')),
   loader: document.getElementById('loading'),
@@ -29,13 +31,13 @@ const widget = {
     const m = d.getMinutes().toString().padStart(2, '0');
     const s = d.getSeconds().toString().padStart(2, '0');
 
-    const temp = this.convertTemp(data.temp, tempUnit).toFixed(1);
-    const feelsLike = this.convertTemp(data.feels_like, tempUnit).toFixed(1);
+    const temp = utils.convertTemp(data.temp, tempUnit).toFixed(1);
+    const feelsLike = utils.convertTemp(data.feels_like, tempUnit).toFixed(1);
     const desc = data.weather[0].description;
     const icon = data.weather[0].icon;
-    const windSpd = this.convertSpd(data.wind_speed, spdUnit).toFixed(0);
-    const gust = this.calcGust(data.wind_gust, spdUnit);        
-    const windDir = this.getWndDir(data.wind_deg);
+    const windSpd = utils.convertSpd(data.wind_speed, spdUnit).toFixed(0);
+    const gust = utils.calcGust(data.wind_gust, spdUnit);        
+    const windDir = utils.getWndDir(data.wind_deg);
     const pres = data.pressure;
     const hum = data.humidity
 
@@ -104,13 +106,13 @@ const widget = {
       d = new Date(data[i].dt * 1000).getDay();
       d = this.dayArray[d];
 
-      const tempMax = this.convertTemp(data[i].temp.max, tempUnit).toFixed(0);
-      const tempMin = this.convertTemp(data[i].temp.min, tempUnit).toFixed(0);
+      const tempMax = utils.convertTemp(data[i].temp.max, tempUnit).toFixed(0);
+      const tempMin = utils.convertTemp(data[i].temp.min, tempUnit).toFixed(0);
       const dailyDesc = data[i].weather[0].description.toUpperCase();
       const dailyIcon = data[i].weather[0].icon;
-      const dailyWindSpd = this.convertSpd(data[i].wind_speed, spdUnit).toFixed(0);
-      const dailyGust = this.calcGust(data[i].wind_gust, spdUnit);
-      const dailyWindDir = this.getWndDir(data[i].wind_deg);
+      const dailyWindSpd = utils.convertSpd(data[i].wind_speed, spdUnit).toFixed(0);
+      const dailyGust = utils.calcGust(data[i].wind_gust, spdUnit);
+      const dailyWindDir = utils.getWndDir(data[i].wind_deg);
       let rain = '';
       data[i].rain ? rain = data[i].rain.toFixed(1) : rain = '0';
       const POP = Math.round(data[i].pop * 100);
@@ -135,22 +137,6 @@ const widget = {
     return forecastTable;
   },
 
-  // Show spinner during fetch
-  displayLoading() {
-    this.loader.classList.add("display");
-  },
-
-  // Hide spinner 
-  hideLoading() {
-    this.loader.classList.remove("display");
-  },
-
-  calcGust(gust, spdUnit) {
-    let g = '';
-    gust > 0 ? g = `/${this.convertSpd(gust, spdUnit).toFixed(0)}` : g = '';
-    return g;
-  },
-
   generateRadioButtons(prefs, selectedUnit, name) {
     let prefsDiv = `<form id="${name}">`;
     for (const pref of prefs) {
@@ -159,35 +145,6 @@ const widget = {
     }
     prefsDiv += '</form>';
     return prefsDiv;
-  },
-
-  convertSpd(spd, spdUnit) {
-    let s = 0;
-    switch (spdUnit) {
-      case ('mph'): s = spd * 2.236936; break;
-      case ('kt'): s = spd * 1.944; break;
-      case ('kph'): s = spd * 3.6; break;
-      case ('Bf'): s = (spd / 0.836) ** (2 / 3);
-    }
-    return s;
-  },
-
-  convertTemp(temp, tempUnit) {
-    let t = 0;
-    if (tempUnit === 'F') {
-      t = ((temp * 1.8) + 32);
-    }
-    else {
-      t = temp;
-    }
-    return t;
-  },
-
-  getWndDir(degrees) {
-    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
-      'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-    const index = Math.floor(((degrees + 11.25) % 360) / 22.5);
-    return directions[index];
   },
 
   changeUnits(e) {
@@ -278,10 +235,10 @@ const widget = {
   },
 
   callFetch(url, callback) {
-    this.displayLoading();     
+    this.loader.classList.add("display");     
     fetch(url)
       .then(response => {
-        this.hideLoading();
+        this.loader.classList.remove("display");
         if (!response.ok) {
           throw new Error(`Network response not ok: ${response.statusText}`);
         }
