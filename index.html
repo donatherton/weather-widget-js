@@ -10,7 +10,7 @@
       * {
         box-sizing: border-box;
       }
-      body, a {
+      body {
         background-color: #000;
         color: #fff;
         font-size: 90%;
@@ -20,32 +20,16 @@
         flex-direction: column;
         align-items: center;
       }
-      p {
-        line-height: 1.3em;
-      }
       a {
+        color: #fff;
         background-color: transparent;
-        line-height: 2rem;
       }
       #main {
-        display: inline-block;
-        margin: auto;
         padding: 10px;
         background-image: url("PNG/fulmine.jpg");
         background-position: center;
         background-size: cover;
         max-width: 35rem;
-      }
-       #searchForm {
-        text-align: center;
-      }
-      input[type="submit"] {
-        background-color: #2d386b;
-        color: #fff;
-        border: 1px solid #fff;
-        padding: 2px;
-        margin: 0;
-        cursor: pointer;
       }
       table {
         border-spacing: 0;
@@ -55,14 +39,26 @@
         padding: 0 5px;
       }
       #footer p {
-        display: flex;
-        flex-wrap: nowrap;
-        flex-direction: row;
-        justify-content: center;        
-        gap: 2em;
+        text-align: center;
+      }
+      #links a {
+        margin: 1rem;
+      }
+      #results a {
+        display: block;
+        line-height: 2rem;
+        text-align: center;
       }
       #searchForm {
         text-align: center;
+      }
+      input[type="submit"] {
+        background-color: #2d386b;
+        color: #fff;
+        border: 1px solid #fff;
+        padding: 2px;
+        margin: 0;
+        cursor: pointer;
       }
       input {
         background-color: #fff;

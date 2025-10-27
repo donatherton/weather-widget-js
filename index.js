@@ -25,7 +25,7 @@ const widget = {
     let data = result.current;
 
     let d = new Date((data.dt + result.timezone_offset) * 1000);
-    const h = d.getUTCHours().toString().padStart(2, '0')
+    const h = d.getHours().toString().padStart(2, '0')
     const m = d.getMinutes().toString().padStart(2, '0');
     const s = d.getSeconds().toString().padStart(2, '0');
 
@@ -40,10 +40,10 @@ const widget = {
     const hum = data.humidity
 
     const sunrise = new Date((data.sunrise + result.timezone_offset) * 1000);
-    const sunriseHour = sunrise.getUTCHours().toString().padStart(2, '0');
+    const sunriseHour = sunrise.getHours().toString().padStart(2, '0');
     const sunriseMin = sunrise.getMinutes().toString().padStart(2, '0');
     const sunset = new Date((data.sunset + result.timezone_offset) * 1000);
-    const sunsetHour = sunset.getUTCHours().toString().padStart(2, '0');
+    const sunsetHour = sunset.getHours().toString().padStart(2, '0');
     const sunsetMin = sunset.getMinutes().toString().padStart(2, '0');
     let warnings = '';
     if (result.alerts) warnings = this.formatWarnings(result.alerts);
@@ -55,20 +55,20 @@ const widget = {
       <input type="submit" name="submit" value="Go"></p>
      </form>
      <div id="results"></div>`;
-    document.getElementById('searchForm').addEventListener('submit', (e) => this.searchLocation(e));
+    document.getElementById('searchForm').addEventListener('submit', (e) => this.callSearchApi(e));
 
     document.getElementById('container').innerHTML =
       `<table><tbody>
-      <tr><td colspan="3" style="padding:10px;"><h3>${this.vars.place}</h3>
-      <P><span style="font-size:large;font-weight:bold">${temp}&deg;${tempUnit}</span> f/l ${feelsLike}&deg;${tempUnit}</p>
-      <p style="font-variant:small-caps;">${desc}<br>
-      <img src="PNG/${icon}.png" width="80" height="80" alt="${desc}"></p></td>
-      <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}${spdUnit} ${windDir}<br>
-      Pressure: ${pres}mb<br>
-      Humidity: ${hum}&percnt;</p>
-      <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
-      <p>Updated: ${h}:${m}:${s}</p>
-      <div class="tooltip">
+        <tr><td colspan="3" style="padding:10px;"><h3>${this.vars.place}</h3>
+        <P><span style="font-size:large;font-weight:bold">${temp}&deg;${tempUnit}</span> f/l ${feelsLike}&deg;${tempUnit}</p>
+        <p style="font-variant:small-caps;">${desc}<br>
+        <img src="PNG/${icon}.png" width="80" height="80" alt="${desc}"></p></td>
+        <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}${spdUnit} ${windDir}<br>
+        Pressure: ${pres}mb<br>
+        Humidity: ${hum}&percnt;</p>
+        <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
+        <p>Updated: ${h}:${m}:${s}</p>
+        <div class="tooltip">
         <span class="tooltiptext">Hover / tap on items in table below for more info</span>
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
@@ -82,9 +82,10 @@ const widget = {
       </div>`;
 
     document.getElementById('footer').innerHTML =
-      `${warnings}<p><a href='hourly.html'>Hourly 48h</a>
+      `${warnings}
+         <p id="links"><a href='hourly.html'>Hourly 48h</a>
          <a href="5-days.html">3 hourly 5 days</a>
-         <a href="radar.html">Radar</a>
+         <a href="radar.html">Radar</a></p>
          <div id="tempPrefs">
           ${tempPrefsDiv}
          </div>
@@ -236,7 +237,7 @@ const widget = {
       return warningsText;
   },
 
-  getLocation(result) {
+  renderSearchResults(result) {
     document.getElementById('results').innerHTML = '';
     if (result.length > 0) {
       result.forEach(res => {
@@ -252,49 +253,43 @@ const widget = {
   locationSelected(lat, lon, place, state) {
     localStorage.setItem('vars', `{"lat": ${lat}, "lon": ${lon}, "place": "${place} ${state}"}`);
     this.vars = JSON.parse(`{"lat": ${lat}, "lon": ${lon}, "place": "${place} ${state}"}`);
-    this.callApi();
+    this.callWeatherApi();
   },
 
-  searchLocation(e) {
+  callSearchApi(e) {
     e.preventDefault(); // Needed to stop calling new html doc on submit which cancels fetch
-    this.displayLoading();
     const loc = document.getElementById('loc').value;
-    const controller = new AbortController();
-    setTimeout(() => controller.abort('Network error'), 5000);
     if (loc && this.hash) {
-      fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${this.hash}`,
-        { signal: controller.signal })
-        .then(response => {
-          this.hideLoading();
-          if (!response.ok) {
-            throw new Error(`Network response not ok: ${response.statusText}`);
-          }
-          return response.json();
-        })
-        .then(result => this.getLocation(result))
-        .catch(err => alert(`Error: ${err}`))
+      this.callFetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${this.hash}`, this.renderSearchResults.bind(this));
     }
   },
 
-  callApi() {
+  callWeatherApi() {
     const { lat, lon } = this.vars;
     if (lat && lon && this.hash) {
-      this.displayLoading();     
-      fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${this.hash}`)
-        .then(response => {
-          this.hideLoading();
-          if (!response.ok) {
-            throw new Error(`Network response not ok: ${response.statusText}`);
-          }
-          return response.json();
-        })
-        .then(result => {
-          sessionStorage.setItem("weather_data", JSON.stringify(result));
-          this.renderWidget()
-        })
-        .catch(err => alert(`Error: ${err}`))
+      this.callFetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${this.hash}`, 
+        this.weatherApiCallback.bind(this));
     }
+  },
+
+  weatherApiCallback(response) {
+    sessionStorage.setItem("weather_data", JSON.stringify(response));
+    this.renderWidget()
+  },
+
+  callFetch(url, callback) {
+    this.displayLoading();     
+    fetch(url)
+      .then(response => {
+        this.hideLoading();
+        if (!response.ok) {
+          throw new Error(`Network response not ok: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(result => callback(result))
+      .catch(err => alert(`Error: ${err}`))
   }
 }
 
-widget.callApi();
+widget.callWeatherApi();

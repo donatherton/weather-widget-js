@@ -92,9 +92,9 @@ const fiveDays = {
     let sunrise = new Date((data.city.sunrise + data.city.timezone) * 1000);
     let sunset = new Date((data.city.sunset + data.city.timezone) * 1000);
     sunrise = new Date(sunrise);
-    const sunriseHour = sunrise.getUTCHours().toString().padStart(2, 0);
+    const sunriseHour = sunrise.getHours().toString().padStart(2, 0);
     sunset = new Date(sunset);
-    const sunsetHour = sunset.getUTCHours().toString().padStart(2, 0);
+    const sunsetHour = sunset.getHours().toString().padStart(2, 0);
 
     for (let i = 0; i < 40; i++) {
       let time = (data.list[i].dt + data.city.timezone) * 1000;

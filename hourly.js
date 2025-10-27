@@ -84,9 +84,9 @@ const hourly = {
     let sunrise = data.current.sunrise + data.timezone_offset;
     let sunset = data.current.sunset + data.timezone_offset;
     sunrise = new Date(sunrise * 1000);
-    const sunriseHour = sunrise.getUTCHours().toString().padStart(2, 0);
+    const sunriseHour = sunrise.getHours().toString().padStart(2, 0);
     sunset = new Date(sunset * 1000);
-    const sunsetHour = sunset.getUTCHours().toString().padStart(2, 0);
+    const sunsetHour = sunset.getHours().toString().padStart(2, 0);
 
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
 
