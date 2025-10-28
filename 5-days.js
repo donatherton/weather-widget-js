@@ -20,21 +20,21 @@ const fiveDays = {
     const tempUnit = this.units.temp;
     const spdUnit = this.units.speed;
 
-    for (let i in data.list) {
-      let time = (data.list[i].dt + data.city.timezone) * 1000;
-      const temp = convertTemp(data.list[i].main.temp - 273.15, tempUnit).toFixed(1);
-      const tbg = tempColour(data.list[i].main.temp -273.15);
+    for (let item of data.list) {
+      let time = (item.dt + data.city.timezone) * 1000;
+      const temp = convertTemp(item.main.temp - 273.15, tempUnit).toFixed(1);
+      const tbg = tempColour(item.main.temp -273.15);
 
-      const symbol = data.list[i].weather[0].icon;
-      const cond = data.list[i].weather[0].description;
-      let cloud = data.list[i].clouds.all;
-      const wndSpd = convertSpd(data.list[i].wind.speed, spdUnit).toFixed(0);
-      const wsp = wndSpdColour(data.list[i].wind.speed);
-      const gust = calcGust(data.list[i].wind.gust, spdUnit);
-      let wndDir = getWndDir(data.list[i].wind.deg);
-      let prs = data.list[i].main.pressure;
+      const symbol = item.weather[0].icon;
+      const cond = item.weather[0].description;
+      let cloud = item.clouds.all;
+      const wndSpd = convertSpd(item.wind.speed, spdUnit).toFixed(0);
+      const wsp = wndSpdColour(item.wind.speed);
+      const gust = calcGust(item.wind.gust, spdUnit);
+      let wndDir = getWndDir(item.wind.deg);
+      let prs = item.main.pressure;
       let rain = '';
-      data.list[i]['rain'] ? rain = `<b>${data.list[i]['rain']['3h'].toFixed(1)}mm</b>` : rain = '0mm';
+      item['rain'] ? rain = `<b>${item['rain']['3h'].toFixed(1)}mm</b>` : rain = '0mm';
 
       time = new Date(time);
       const ftime = time.getHours().toString().padStart(2, 0);

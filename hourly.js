@@ -9,9 +9,7 @@ const hourly = {
   renderWidget(result) {
     const data = JSON.parse(result);
     let forecastTable = '';
-
-    const fc = data.hourly;
-    
+ 
     let sunrise = data.current.sunrise + data.timezone_offset;
     let sunset = data.current.sunset + data.timezone_offset;
     sunrise = new Date(sunrise * 1000);
@@ -23,20 +21,20 @@ const hourly = {
 
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
 
-    for (let i in fc) {
-      const ts = fc[i].dt + data.timezone_offset;
-      const temp = convertTemp(fc[i].temp, tempUnit).toFixed(1);
-      const tbg = tempColour(fc[i].temp);
-      const symbol = fc[i].weather[0].icon;
-      const cond = fc[i].weather[0].description;
-      const wndSpd = convertSpd(fc[i].wind_speed, spdUnit).toFixed(0);
-      const wsp = wndSpdColour(fc[i].wind_speed);
-      const wndDir = fc[i].wind_deg;
-      const gust = calcGust(fc[i].wind_gust, spdUnit);
-      const pres = fc[i].pressure;
+    for (let item of data.hourly) {
+      const ts = item.dt + data.timezone_offset;
+      const temp = convertTemp(item.temp, tempUnit).toFixed(1);
+      const tbg = tempColour(item.temp);
+      const symbol = item.weather[0].icon;
+      const cond = item.weather[0].description;
+      const wndSpd = convertSpd(item.wind_speed, spdUnit).toFixed(0);
+      const wsp = wndSpdColour(item.wind_speed);
+      const wndDir = item.wind_deg;
+      const gust = calcGust(item.wind_gust, spdUnit);
+      const pres = item.pressure;
       let rain = '';
-      fc[i].rain ? rain = `<b>${fc[i].rain['1h'].toFixed(1)}mm</b>` : rain = '0mm';
-      const cloud = fc[i].clouds;
+      item.rain ? rain = `<b>${item.rain['1h'].toFixed(1)}mm</b>` : rain = '0mm';
+      const cloud = item.clouds;
 
       const time = new Date(ts * 1000);
       const ftime = time.getHours().toString().padStart(2, 0);
