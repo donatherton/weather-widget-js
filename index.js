@@ -1,4 +1,4 @@
-import utils from './utils.js';
+import { getHash, convertSpd, convertTemp, calcGust, getWndDir } from './utils.js';
 
 "use strict";
 /* Check whether prefs in storage, save defaults if not */ 
@@ -6,7 +6,7 @@ localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph
 localStorage.vars || localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
 
 const widget = {
-  hash: utils.getHash(),
+  hash: getHash(),
   vars: JSON.parse(localStorage.getItem('vars')), 
   units: JSON.parse(localStorage.getItem('units')),
   loader: document.getElementById('loading'),
@@ -31,13 +31,13 @@ const widget = {
     const m = d.getMinutes().toString().padStart(2, '0');
     const s = d.getSeconds().toString().padStart(2, '0');
 
-    const temp = utils.convertTemp(data.temp, tempUnit).toFixed(1);
-    const feelsLike = utils.convertTemp(data.feels_like, tempUnit).toFixed(1);
+    const temp = convertTemp(data.temp, tempUnit).toFixed(1);
+    const feelsLike = convertTemp(data.feels_like, tempUnit).toFixed(1);
     const desc = data.weather[0].description;
     const icon = data.weather[0].icon;
-    const windSpd = utils.convertSpd(data.wind_speed, spdUnit).toFixed(0);
-    const gust = utils.calcGust(data.wind_gust, spdUnit);        
-    const windDir = utils.getWndDir(data.wind_deg);
+    const windSpd = convertSpd(data.wind_speed, spdUnit).toFixed(0);
+    const gust = calcGust(data.wind_gust, spdUnit);        
+    const windDir = getWndDir(data.wind_deg);
     const pres = data.pressure;
     const hum = data.humidity
 
@@ -106,13 +106,13 @@ const widget = {
       d = new Date(data[i].dt * 1000).getDay();
       d = this.dayArray[d];
 
-      const tempMax = utils.convertTemp(data[i].temp.max, tempUnit).toFixed(0);
-      const tempMin = utils.convertTemp(data[i].temp.min, tempUnit).toFixed(0);
+      const tempMax = convertTemp(data[i].temp.max, tempUnit).toFixed(0);
+      const tempMin = convertTemp(data[i].temp.min, tempUnit).toFixed(0);
       const dailyDesc = data[i].weather[0].description.toUpperCase();
       const dailyIcon = data[i].weather[0].icon;
-      const dailyWindSpd = utils.convertSpd(data[i].wind_speed, spdUnit).toFixed(0);
-      const dailyGust = utils.calcGust(data[i].wind_gust, spdUnit);
-      const dailyWindDir = utils.getWndDir(data[i].wind_deg);
+      const dailyWindSpd = convertSpd(data[i].wind_speed, spdUnit).toFixed(0);
+      const dailyGust = calcGust(data[i].wind_gust, spdUnit);
+      const dailyWindDir = getWndDir(data[i].wind_deg);
       let rain = '';
       data[i].rain ? rain = data[i].rain.toFixed(1) : rain = '0';
       const POP = Math.round(data[i].pop * 100);
@@ -217,7 +217,8 @@ const widget = {
     e.preventDefault(); // Needed to stop calling new html doc on submit which cancels fetch
     const loc = document.getElementById('loc').value;
     if (loc && this.hash) {
-      this.callFetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${this.hash}`, this.renderSearchResults.bind(this));
+      this.callFetch(`https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${this.hash}`, 
+        this.renderSearchResults.bind(this));
     }
   },
 
@@ -245,7 +246,7 @@ const widget = {
         return response.json();
       })
       .then(result => callback(result))
-      .catch(err => alert(`Error: ${err}`))
+      //.catch(err => alert(`Error: ${err}`))
   }
 }
 

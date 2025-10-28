@@ -151,5 +151,3 @@
         .catch(err => alert(`Error: ${err}`));
     }
 })()
-//const radar = new Radar();
-

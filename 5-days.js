@@ -1,9 +1,9 @@
-import utils from './utils.js';
+import { getHash, convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour } from './utils.js';
 
 "use strict"
 
 const fiveDays = {
-  hash: utils.getHash(),
+  hash: getHash(),
   loader: document.getElementById('loading'),
   vars: JSON.parse(localStorage.getItem('vars')),
   units: JSON.parse(localStorage.getItem('units')),
@@ -20,18 +20,18 @@ const fiveDays = {
     const tempUnit = this.units.temp;
     const spdUnit = this.units.speed;
 
-    for (let i = 0; i < 40; i++) {
+    for (let i in data.list) {
       let time = (data.list[i].dt + data.city.timezone) * 1000;
-      const temp = utils.convertTemp(data.list[i].main.temp - 273.15, tempUnit).toFixed(1);
-      const tbg = utils.tempColour(data.list[i].main.temp -273.15);
+      const temp = convertTemp(data.list[i].main.temp - 273.15, tempUnit).toFixed(1);
+      const tbg = tempColour(data.list[i].main.temp -273.15);
 
       const symbol = data.list[i].weather[0].icon;
       const cond = data.list[i].weather[0].description;
       let cloud = data.list[i].clouds.all;
-      const wndSpd = utils.convertSpd(data.list[i].wind.speed, spdUnit).toFixed(0);
-      const wsp = utils.wndSpdColour(data.list[i].wind.speed);
-      const gust = utils.calcGust(data.list[i].wind.gust, spdUnit);
-      let wndDir = utils.getWndDir(data.list[i].wind.deg);
+      const wndSpd = convertSpd(data.list[i].wind.speed, spdUnit).toFixed(0);
+      const wsp = wndSpdColour(data.list[i].wind.speed);
+      const gust = calcGust(data.list[i].wind.gust, spdUnit);
+      let wndDir = getWndDir(data.list[i].wind.deg);
       let prs = data.list[i].main.pressure;
       let rain = '';
       data.list[i]['rain'] ? rain = `<b>${data.list[i]['rain']['3h'].toFixed(1)}mm</b>` : rain = '0mm';
@@ -41,7 +41,7 @@ const fiveDays = {
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
       const day = days[time.getDay()];
 
-      const dn = utils.dayNight(Number(sunriseHour), Number(sunsetHour), ftime);
+      const dn = dayNight(Number(sunriseHour), Number(sunsetHour), ftime);
       let dnColour = '';
       if (dn === '-d') dnColour = 'style="background-color:#fff"';
       else if (dn === '-n') dnColour = 'style="background-color:#ddd"';
@@ -51,7 +51,7 @@ const fiveDays = {
            <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${this.units.temp}</strong></td>
            <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
            <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
-           <td style="background-color: ${utils.cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">
+           <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">
         ${wndSpd}${gust}${this.units.speed}</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
     }
 
