@@ -10,9 +10,10 @@ const fiveDays = {
 
   renderWidget(data) {
     let forecastTable = '';
+    const city = data.city;
 
-    let sunrise = new Date((data.city.sunrise + data.city.timezone) * 1000);
-    let sunset = new Date((data.city.sunset + data.city.timezone) * 1000);
+    let sunrise = new Date((city.sunrise + city.timezone) * 1000);
+    let sunset = new Date((city.sunset + city.timezone) * 1000);
     sunrise = new Date(sunrise);
     const sunriseHour = sunrise.getHours().toString().padStart(2, 0);
     sunset = new Date(sunset);
@@ -21,18 +22,20 @@ const fiveDays = {
     const spdUnit = this.units.speed;
 
     for (let item of data.list) {
-      let time = (item.dt + data.city.timezone) * 1000;
+      let time = (item.dt + city.timezone) * 1000;
       const temp = convertTemp(item.main.temp - 273.15, tempUnit).toFixed(1);
       const tbg = tempColour(item.main.temp -273.15);
 
       const symbol = item.weather[0].icon;
       const cond = item.weather[0].description;
-      let cloud = item.clouds.all;
+      const cloud = item.clouds.all;
+      const clColour = cloudColour(item.clouds.all);
       const wndSpd = convertSpd(item.wind.speed, spdUnit).toFixed(0);
-      const wsp = wndSpdColour(item.wind.speed);
+      const wspColour = wndSpdColour(item.wind.speed);
       const gust = calcGust(item.wind.gust, spdUnit);
-      let wndDir = getWndDir(item.wind.deg);
-      let prs = item.main.pressure;
+      const gustColour = wndSpdColour(item.wind.gust);
+      const wndDir = getWndDir(item.wind.deg);
+      const prs = item.main.pressure;
       let rain = '';
       item['rain'] ? rain = `<b>${item['rain']['3h'].toFixed(1)}mm</b>` : rain = '0mm';
 
@@ -48,11 +51,12 @@ const fiveDays = {
 
       forecastTable +=
         `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
-           <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${this.units.temp}</strong></td>
+           <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${tempUnit}</strong></td>
            <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
            <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
-           <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">
-        ${wndSpd}${gust}${this.units.speed}</td><td>${wndDir}</td><td>${prs}mb</td></tr>`;
+           <td style="background-color: ${clColour}">${cloud}&percnt;</td><td>
+           <span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
+           <td>${wndDir}</td><td>${prs}mb</td></tr>`;
     }
 
     document.getElementById('container').innerHTML = 

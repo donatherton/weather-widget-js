@@ -26,6 +26,25 @@ export function  getWndDir(degrees) {
   return directions[index];
 }
 
+export function  wndSpdColour(wndSpd) {
+  const ranges = [0, 2, 5, 7, 9, 12, 14, 17, 20, 25];
+  const colors = [
+    '#888',
+    '#555',
+    '#333',
+    '#b3b300',
+    '#ff9900',
+    '#b36b00',
+    '#ff5050',
+    '#e60000',
+    '#800000;font-weight:bold',
+    '#ff0000;font-weight:bold',
+  ];
+  for (let i = ranges.length - 1; i >= 0; i--) {
+    if (wndSpd >= ranges[i]) return colors[i];
+  }
+}
+
 export function  dayNight(sr, ss, h) {
   let dn = '';
   if (sr <= h && h <= ss) { dn = '-d'; } else { dn = '-n'; }
@@ -48,21 +67,3 @@ export function  cloudColour(cloud) {
   }
 }
 
-export function  wndSpdColour(wndSpd) {
-  const ranges = [0, 2, 5, 7, 9, 12, 14, 17, 20, 25];
-  const colors = [
-    '#888',
-    '#555',
-    '#333',
-    '#b3b300',
-    '#ff9900',
-    '#b36b00',
-    '#ff5050',
-    '#e60000',
-    '#800000;font-weight:bold',
-    '#ff0000;font-weight:bold',
-  ];
-  for (let i = ranges.length - 1; i >= 0; i--) {
-    if (wndSpd >= ranges[i]) return colors[i];
-  }
-}

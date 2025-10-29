@@ -28,13 +28,15 @@ const hourly = {
       const symbol = item.weather[0].icon;
       const cond = item.weather[0].description;
       const wndSpd = convertSpd(item.wind_speed, spdUnit).toFixed(0);
-      const wsp = wndSpdColour(item.wind_speed);
-      const wndDir = item.wind_deg;
+      const wspColour = wndSpdColour(item.wind_speed);
+      const wndDir = getWndDir(item.wind_deg);
       const gust = calcGust(item.wind_gust, spdUnit);
+      const gustColour = wndSpdColour(item.wind_gust);
       const pres = item.pressure;
       let rain = '';
       item.rain ? rain = `<b>${item.rain['1h'].toFixed(1)}mm</b>` : rain = '0mm';
       const cloud = item.clouds;
+      const clColour = cloudColour(cloud);
 
       const time = new Date(ts * 1000);
       const ftime = time.getHours().toString().padStart(2, 0);
@@ -50,11 +52,12 @@ const hourly = {
 
       forecastTable +=
         `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
-           <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${this.units.temp}</strong></td>
+           <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${tempUnit}</strong></td>
            <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
            <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
-           <td style="background-color: ${cloudColour(cloud)}">${cloud}&percnt;</td><td style="color:${wsp}">
-        ${wndSpd}${gust}${this.units.speed}</td><td>${getWndDir(wndDir)}</td><td>${pres}mb</td></tr>`;
+           <td style="background-color: ${clColour}">${cloud}&percnt;</td><td>
+           <span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
+           <td>${wndDir}</td><td>${pres}mb</td></tr>`;
     }
 
     document.getElementById('container').innerHTML = 

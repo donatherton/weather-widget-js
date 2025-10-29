@@ -87,7 +87,7 @@ const widget = {
       `${warnings}
          <p id="links"><a href='hourly.html'>Hourly 48h</a>
          <a href="5-days.html">3 hourly 5 days</a>
-         <a href="radar.html">Radar</a></p>
+         <a href="radar/radar.html">Radar</a></p>
          <div id="tempPrefs">
           ${tempPrefsDiv}
          </div>
@@ -148,11 +148,8 @@ const widget = {
   },
 
   changeUnits(e) {
-    const tmp = this.units;
-    if (e.target.name === 'tempUnits') {
-      tmp.temp = e.target.value;
-    } else tmp.speed = e.target.value;
-    localStorage.setItem('units', JSON.stringify(tmp));
+    this.units = { ...this.units, [ e.target.name === 'tempUnits' ? 'temp' : 'speed' ]: e.target.value }
+    localStorage.setItem('units', JSON.stringify(this.units));
     this.renderWidget();
   },
   
@@ -246,7 +243,7 @@ const widget = {
         return response.json();
       })
       .then(result => callback(result))
-      //.catch(err => alert(`Error: ${err}`))
+      .catch(err => alert(`Error: ${err}`))
   }
 }
 
