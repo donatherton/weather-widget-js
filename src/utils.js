@@ -37,8 +37,8 @@ export function  wndSpdColour(wndSpd) {
     '#b36b00',
     '#ff5050',
     '#e60000',
-    '#800000;font-weight:bold',
     '#ff0000;font-weight:bold',
+    '#800000;font-weight:bold'
   ];
   for (let i = ranges.length - 1; i >= 0; i--) {
     if (wndSpd >= ranges[i]) return colors[i];
