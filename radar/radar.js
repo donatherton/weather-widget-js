@@ -38,6 +38,7 @@
         radarOrSat = e.target.id;
         createRadarLayer();
         animation = 0;
+        document.getElementById('play').value = '>>';
     }
 
     function nextButton(e) {
