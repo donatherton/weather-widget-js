@@ -10,7 +10,7 @@ const fiveDays = {
 
   renderWidget(data) {
     let forecastTable = '';
-    const city = data.city;
+    const { city } = data;
 
     let sunrise = new Date((city.sunrise + city.timezone) * 1000);
     let sunset = new Date((city.sunset + city.timezone) * 1000);
@@ -24,10 +24,9 @@ const fiveDays = {
     for (let item of data.list) {
       let time = (item.dt + city.timezone) * 1000;
       const temp = convertTemp(item.main.temp - 273.15, tempUnit).toFixed(1);
-      const tbg = tempColour(item.main.temp -273.15);
+      const tbg = tempColour(item.main.temp - 273.15);
 
-      const symbol = item.weather[0].icon;
-      const cond = item.weather[0].description;
+      const { icon, description } = item.weather[0];
       const cloud = item.clouds.all;
       const clColour = cloudColour(item.clouds.all);
       const wndSpd = convertSpd(item.wind.speed, spdUnit).toFixed(0);
@@ -52,8 +51,8 @@ const fiveDays = {
       forecastTable +=
         `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
            <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${tempUnit}</strong></td>
-           <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
-           <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
+           <td><image src="PNG/${icon}.png" alt="${description}" width="30" height="30"></td>
+           <td style="font-variant:small-caps;">${description}</td><td>${rain}</td>
            <td style="background-color: ${clColour}">${cloud}&percnt;</td><td>
            <span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
            <td>${wndDir}</td><td>${prs}mb</td></tr>`;
@@ -85,19 +84,20 @@ const fiveDays = {
   callApi() {
     const { lat, lon } = this.vars;
     if (lat && lon && this.hash) {
-      this.loader.classList.add("display");   
+      this.loader.classList.add('display');
       fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${this.hash}`)
         .then(response => {
-          this.loader.classList.remove("display");
+          this.loader.classList.remove('display');
           if (!response.ok) {
             throw new Error(`Network response not ok: ${response.statusText}`);
           }
+
           return response.json();
         })
         .then(result => this.renderWidget(result))
         .catch(err => alert(`Error: ${err}`))
     }
-  }
-}
+  },
+};
 
 fiveDays.callApi();

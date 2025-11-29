@@ -1,6 +1,6 @@
 import { convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour } from './utils.js';
 
-"use strict";
+'use strict';
 
 const hourly = {
   place: JSON.parse(localStorage.getItem('vars')).place,
@@ -9,7 +9,7 @@ const hourly = {
   renderWidget(result) {
     const data = JSON.parse(result);
     let forecastTable = '';
- 
+
     let sunrise = data.current.sunrise + data.timezone_offset;
     let sunset = data.current.sunset + data.timezone_offset;
     sunrise = new Date(sunrise * 1000);
@@ -25,8 +25,7 @@ const hourly = {
       const ts = item.dt + data.timezone_offset;
       const temp = convertTemp(item.temp, tempUnit).toFixed(1);
       const tbg = tempColour(item.temp);
-      const symbol = item.weather[0].icon;
-      const cond = item.weather[0].description;
+      const { icon, description } = item.weather[0];
       const wndSpd = convertSpd(item.wind_speed, spdUnit).toFixed(0);
       const wspColour = wndSpdColour(item.wind_speed);
       const wndDir = getWndDir(item.wind_deg);
@@ -53,8 +52,8 @@ const hourly = {
       forecastTable +=
         `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
            <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${tempUnit}</strong></td>
-           <td><image src="PNG/${symbol}.png" alt="${cond}" width="30" height="30"></td>
-           <td style="font-variant:small-caps;">${cond}</td><td>${rain}</td>
+           <td><image src="PNG/${icon}.png" alt="${description}" width="30" height="30"></td>
+           <td style="font-variant:small-caps;">${description}</td><td>${rain}</td>
            <td style="background-color: ${clColour}">${cloud}&percnt;</td><td>
            <span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
            <td>${wndDir}</td><td>${pres}mb</td></tr>`;
@@ -81,8 +80,8 @@ const hourly = {
         ${forecastTable}
       </tbody>
      </table>`;
-  }
-}
+  },
+};
 
 const data = sessionStorage.getItem('weather_data');
 if (data) {

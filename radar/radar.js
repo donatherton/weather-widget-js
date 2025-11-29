@@ -1,6 +1,6 @@
 'use strict';
 
-(function Radar() {
+(() => {
     const vars = JSON.parse(localStorage.getItem('vars'));
     const { lat, lon } = vars;
     let data = {};
@@ -49,7 +49,7 @@
 
     function changeFrame(next) {
         currentFrame += next;
-        if (currentFrame > frame.length-1) currentFrame -= 1;
+        if (currentFrame > frame.length - 1) currentFrame -= 1;
         if (currentFrame < 0) currentFrame += 1;
         renderLayer(currentFrame);
         animation = 0;
@@ -71,6 +71,7 @@
             for (let i = currentFrame; i < mapLayer.length; i++) {
                 mapLayer[i].addTo(map).setOpacity(0);
             }
+
             animation = 1;
             playAnimation();
         }
@@ -94,7 +95,7 @@
 
     function displayTime(t) {
         const timeStamp = new Date(t * 1000);
-        ts = `${timeStamp.getHours().toString().padStart(2, '0')}:${timeStamp.getMinutes().toString().padStart(2, '0')}`
+        ts = `${timeStamp.getHours().toString().padStart(2, '0')}:${timeStamp.getMinutes().toString().padStart(2, '0')}`;
         document.getElementById('time').innerHTML = `Frame time: ${ts}`;
     }
 
@@ -118,7 +119,7 @@
         renderLayer(currentFrame);
     }
 
-    function renderLayer(newFrame) { 
+    function renderLayer(newFrame) {
         radarLayer.forEach(layer => map.removeLayer(layer));
         satLayer.forEach(layer => map.removeLayer(layer));
         if (frame[newFrame]) {                                              
@@ -137,12 +138,13 @@
 
     function callApi() {
         //displayLoading();
-        fetch(`https://api.rainviewer.com/public/weather-maps.json`)
+        fetch('https://api.rainviewer.com/public/weather-maps.json')
             .then(response => {
                 //hideLoading();
                 if (!response.ok) {
                     throw new Error(`Network response not ok: ${response.statusText}`);
                 }
+
                 return response.json();
             })
             .then(result => {
@@ -151,4 +153,4 @@
             })
         .catch(err => alert(`Error: ${err}`));
     }
-})()
+})();
