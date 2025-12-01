@@ -1,13 +1,13 @@
 import { getHash, convertSpd, convertTemp, calcGust, getWndDir } from './utils.js';
 
-"use strict";
+'use strict';
 /* Check whether prefs in storage, save defaults if not */ 
 localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
 localStorage.vars || localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
 
 const widget = {
   hash: getHash(),
-  vars: JSON.parse(localStorage.getItem('vars')), 
+  vars: JSON.parse(localStorage.getItem('vars')),
   units: JSON.parse(localStorage.getItem('units')),
   loader: document.getElementById('loading'),
   dayArray: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -224,7 +224,7 @@ const widget = {
     const { lat, lon } = this.vars;
     if (lat && lon && this.hash) {
       this.callFetch(
-        `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${this.hash}`,
+        `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely&units=metric&appid=${this.hash}`,
         this.weatherApiCallback.bind(this)
       );
     }

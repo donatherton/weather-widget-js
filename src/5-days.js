@@ -34,7 +34,7 @@ const fiveDays = {
       const gust = calcGust(item.wind.gust, spdUnit);
       const gustColour = wndSpdColour(item.wind.gust);
       const wndDir = getWndDir(item.wind.deg);
-      const prs = item.main.pressure;
+      const { pressure } = item.main;
       let rain = '';
       item['rain'] ? rain = `<b>${item['rain']['3h'].toFixed(1)}mm</b>` : rain = '0mm';
 
@@ -55,7 +55,7 @@ const fiveDays = {
            <td style="font-variant:small-caps;">${description}</td><td>${rain}</td>
            <td style="background-color: ${clColour}">${cloud}&percnt;</td><td>
            <span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
-           <td>${wndDir}</td><td>${prs}mb</td></tr>`;
+           <td>${wndDir}</td><td>${pressure}mb</td></tr>`;
     }
 
     document.getElementById('container').innerHTML = 

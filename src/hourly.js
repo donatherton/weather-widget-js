@@ -31,7 +31,7 @@ const hourly = {
       const wndDir = getWndDir(item.wind_deg);
       const gust = calcGust(item.wind_gust, spdUnit);
       const gustColour = wndSpdColour(item.wind_gust);
-      const pres = item.pressure;
+      const { pressure } = item;
       let rain = '';
       item.rain ? rain = `<b>${item.rain['1h'].toFixed(1)}mm</b>` : rain = '0mm';
       const cloud = item.clouds;
@@ -56,7 +56,7 @@ const hourly = {
            <td style="font-variant:small-caps;">${description}</td><td>${rain}</td>
            <td style="background-color: ${clColour}">${cloud}&percnt;</td><td>
            <span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
-           <td>${wndDir}</td><td>${pres}mb</td></tr>`;
+           <td>${wndDir}</td><td>${pressure}mb</td></tr>`;
     }
 
     document.getElementById('container').innerHTML = 
