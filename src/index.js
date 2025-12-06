@@ -194,8 +194,10 @@ const widget = {
     document.getElementById('results').innerHTML = '';
     if (result.length > 0) {
       result.forEach(res => {
-        const link = document.createElement('a');
-        link.href = 'javascript:void(0)';
+        const link = document.createElement('p');
+        link.style.cursor = 'pointer';
+        link.style.textDecoration = 'underline';
+        link.style.textAlign = 'center';
         link.textContent = `${res.name} ${res.state || res.country}`;
         document.getElementById('results').append(link);
         link.addEventListener('click', () => this.locationSelected(res.lat, res.lon, res.name, res.state || res.country));
