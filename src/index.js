@@ -180,7 +180,7 @@ const widget = {
         const warningText = `<div class="warning-txt" style="display:none">
                               <p>${event}</p>
                               <p>${start} - ${end}</p>
-                              <p>${desc}</p>
+                              <p style="text-align:left">${desc}</p>
                             </div>`
         warningsText += warningText;
        } catch(err) {
