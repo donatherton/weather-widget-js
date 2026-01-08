@@ -79,7 +79,7 @@
 
     function playAnimation() { 
         if (animation && currentFrame < mapLayer.length) {
-            playBtn.value = '||';
+            playBtn.value = '| |';
             mapLayer[currentFrame].setOpacity(0.7);
             displayTime(frame[currentFrame].time);
             if (mapLayer[currentFrame - 1]) map.removeLayer(mapLayer[currentFrame - 1]);
@@ -107,8 +107,7 @@
             smooth = 1;
             snow = 1;
             currentFrame = frame.length - 1;
-        }
-        else {
+        } else {
             mapLayer = satLayer;
             frame = data.satellite.infrared;
             colors = 0;
@@ -116,23 +115,23 @@
             snow = 0;
             currentFrame = frame.length - 1;
         }
+
         renderLayer(currentFrame);
     }
 
     function renderLayer(newFrame) {
         radarLayer.forEach(layer => map.removeLayer(layer));
         satLayer.forEach(layer => map.removeLayer(layer));
-        if (frame[newFrame]) {                                              
-            if (!mapLayer[newFrame]) {
-                mapLayer[newFrame] = 
-                    new L.TileLayer(`${data.host}${frame[newFrame].path}/256/{z}/{x}/{y}/${colors}/${smooth}_${snow}.png`,
-                        {
-                            tileSize: 256,
-                            opacity: 0.7
-                        });
-            };
+        if (frame[newFrame]) {
+            mapLayer[newFrame] ||= new L.TileLayer(`${data.host}${frame[newFrame].path}/256/{z}/{x}/{y}/${colors}/${smooth}_${snow}.png`,
+                {
+                    tileSize: 256,
+                    opacity: 0.7,
+                }
+            );
+
             map.addLayer(mapLayer[newFrame]);
-            displayTime(frame[newFrame].time);                
+            displayTime(frame[newFrame].time);
         }
     }
 

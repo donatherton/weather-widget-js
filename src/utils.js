@@ -6,6 +6,7 @@ export function convertSpd(speed, unit) {
   switch (unit) {
     case 'kt': return speed * 1.944;
     case 'mph': return speed * 2.236936;
+    case 'kph': return speed * 3.6;
     case 'Bf': return (speed / 0.836) ** (2 / 3);
     default: return speed;
   }
