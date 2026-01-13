@@ -7,9 +7,16 @@ export function convertSpd(speed, unit) {
     case 'kt': return speed * 1.944;
     case 'mph': return speed * 2.236936;
     case 'kph': return speed * 3.6;
-    case 'Bf': return (speed / 0.836) ** (2 / 3);
+    case 'Bf': return beaufort(speed);
     default: return speed;
   }
+}
+/* Beaufort only goes to 12! */
+function beaufort(speed) {
+  let s = speed;
+  s = (s / 0.836) ** (2 / 3);
+  if (s > 12) s = 12;
+  return s;
 }
 
 export function convertTemp(temp, unit) {

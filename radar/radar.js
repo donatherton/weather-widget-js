@@ -7,7 +7,7 @@
     let radarOrSat = 'radar';
     const radarLayer = [];
     const satLayer = [];
-    let mapLayer = null;// Will refer to either radarLayer or satLayer
+    let mapLayer = null;// Will reference either radarLayer or satLayer
     let currentFrame = 0;
     let ts = '';
     let frame = null;
