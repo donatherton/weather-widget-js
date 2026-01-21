@@ -23,7 +23,7 @@
     document.getElementById('nextFrame').addEventListener('click', e => nextButton(e));
     playBtn.addEventListener('click', playStop);
 
-    const map = L.map('mapid', { maxZoom: 10, zoomControl: false}).setView([lat, lon], 6);
+    const map = L.map('mapid', { maxZoom: 10, zoomControl: false}).setView([lat, lon], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors | Radar data &copy; <a href="https://rainviewer.com">RainViewer</a>'
     }).addTo(map);
