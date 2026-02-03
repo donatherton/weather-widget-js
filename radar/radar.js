@@ -17,13 +17,13 @@
     let animation = 0;
     const playBtn = document.getElementById('play');
 
-    document.getElementById('radar').addEventListener('click', e => setRadarOrSat(e));
-    document.getElementById('satellite').addEventListener('click', e => setRadarOrSat(e));
+    // document.getElementById('radar').addEventListener('click', e => setRadarOrSat(e));
+    // document.getElementById('satellite').addEventListener('click', e => setRadarOrSat(e));
     document.getElementById('prevFrame').addEventListener('click', e => nextButton(e));
     document.getElementById('nextFrame').addEventListener('click', e => nextButton(e));
     playBtn.addEventListener('click', playStop);
 
-    const map = L.map('mapid', { maxZoom: 10, zoomControl: false}).setView([lat, lon], 8);
+    const map = L.map('mapid', { maxZoom: 7, zoomControl: false}).setView([lat, lon], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors | Radar data &copy; <a href="https://rainviewer.com">RainViewer</a>'
     }).addTo(map);
@@ -34,12 +34,12 @@
 
     callApi();
 
-    function setRadarOrSat(e) {
-        radarOrSat = e.target.id;
-        createRadarLayer();
-        animation = 0;
-        document.getElementById('play').value = '>>';
-    }
+    // function setRadarOrSat(e) {
+    //     radarOrSat = e.target.id;
+    //     createRadarLayer();
+    //     animation = 0;
+    //     document.getElementById('play').value = '>>';
+    // }
 
     function nextButton(e) {
         let next = 0;
