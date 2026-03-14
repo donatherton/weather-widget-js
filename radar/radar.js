@@ -1,3 +1,7 @@
+/* On 2-2-2026 RainViewer removed satellite layers and restricted radar to
+ * one colour scheme and max zoom 7. I'll keep the code for these for now
+ * for possible re-use later */
+
 'use strict';
 
 (() => {
