@@ -1,41 +1,103 @@
+'use strict';
+
 import { getHash, convertSpd, convertTemp, calcGust, getWndDir } from './utils.js';
 
-'use strict';
-/* Check whether prefs in storage, save defaults if not */ 
-localStorage.units || localStorage.setItem('units', '{"temp": "C", "speed": "mph"}');
-localStorage.vars || localStorage.setItem('vars', '{"lat": 50.15, "lon": -5.07, "place": "Falmouth"}');
+const CONFIG = {
+  apiKey: getHash(),
+  defaultUnits: '{ "temp": "C", "speed": "mph" }',
+  defaultVars: '{ "lat": 50.15, "lon": -5.07, "place": "Falmouth" }',
+  forecastDays: 5,
+  searchLimit: 5,
+  geocodeUrl: 'https://api.openweathermap.org/geo/1.0/direct',
+  weatherUrl: 'https://api.openweathermap.org/data/3.0/onecall',
+};
 
 const widget = {
-  hash: getHash(),
-  vars: JSON.parse(localStorage.getItem('vars')),
-  units: JSON.parse(localStorage.getItem('units')),
+  vars: null,
+  units: null,
   loader: document.getElementById('loading'),
   dayArray: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 
-  renderWidget() {
+  init() {
+    this.loadStorage();
+    this.createSearch();
+    this.createFooter();
+    this.callWeatherApi();
+  },
+
+  loadStorage() {
+    /* Check whether prefs in storage, save defaults if not */
+    localStorage.units || localStorage.setItem('units', CONFIG.defaultUnits);
+    localStorage.vars || localStorage.setItem('vars', CONFIG.defaultVars);
+
+    this.vars = JSON.parse(localStorage.getItem('vars'));
+    this.units = JSON.parse(localStorage.getItem('units'));
+  },
+
+  createSearch() {
+    document.getElementById('search').innerHTML = `
+    <form id="searchForm">
+      <p><label for="loc">Location search </label>
+      <input id="loc" type="text" name="loc" aria-label="Location search">
+      <input type="submit" name="submit" value="Go"></p>
+    </form>
+    <div id="results" aria-live="polite"></div>`;
+    document.getElementById('searchForm').addEventListener('submit', e => this.callSearchApi(e));
+  },
+
+  createFooter() {
     const tempPrefs = ['C', 'F'];
-    const tempUnit = this.units.temp;
-    const tempPrefsDiv = this.generateRadioButtons(tempPrefs, tempUnit, 'tempUnits');
+    const tempPrefsDiv = this.generateRadioButtons(tempPrefs, this.units.temp, 'tempUnits', 'Temperature');
 
     const spdPrefs = ['mph', 'kt', 'kph', 'Bf'];
-    const spdUnit = this.units.speed;
-    const spdPrefsDiv = this.generateRadioButtons(spdPrefs, spdUnit, 'spdUnits');
+    const spdPrefsDiv = this.generateRadioButtons(spdPrefs, this.units.speed, 'spdUnits', 'Speed');
 
-    const result = JSON.parse(sessionStorage.getItem('weather_data'));
+    document.getElementById('footer').innerHTML = `     
+         <p id="links"><a href='hourly.html'>Hourly 48h</a>
+         <a href="5-days.html">3 hourly 5 days</a>
+         <a href="radar/radar.html">Radar</a></p>
+         <div id="tempPrefs" role="group" aria-label="Temperature units">
+          ${tempPrefsDiv}
+         </div>
+         <div id="spdPrefs" role="group" aria-label="Speed units">
+          ${spdPrefsDiv}
+         </div>
+       <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank" rel="noopener noreferrer">OpenWeather</a></p>`;
+    document.getElementById('tempUnits').addEventListener('change', e => this.changeUnits(e));
+    document.getElementById('spdUnits').addEventListener('change', e => this.changeUnits(e));
+  },
 
-    // Current conditions
+  renderWidget() {
+    const storedData = sessionStorage.getItem('weather_data');
+    if (!storedData) {
+      this.showError('No weather data available');
+      return;
+    }
+
+    let result;
+    try {
+      result = JSON.parse(storedData);
+    } catch (err) {
+      this.showError(`Failed to parse weather data: ${err}`);
+      return;
+    }
+
+    if (!result.current) {
+      this.showError('Invalid weather data format');
+      return;
+    }
+
     const data = result.current;
-
     const d = new Date((data.dt + result.timezone_offset) * 1000);
     const h = d.getHours().toString().padStart(2, '0');
     const m = d.getMinutes().toString().padStart(2, '0');
     const s = d.getSeconds().toString().padStart(2, '0');
 
-    const temp = convertTemp(data.temp, tempUnit).toFixed(1);
-    const feelsLike = convertTemp(data.feels_like, tempUnit).toFixed(1);
+    const temp = convertTemp(data.temp, this.units.temp).toFixed(1);
+    const feelsLike = convertTemp(data.feels_like, this.units.temp).toFixed(1);
     const { icon, description } = data.weather[0];
-    const windSpd = convertSpd(data.wind_speed, spdUnit).toFixed(0);
-    const gust = calcGust(data.wind_gust, spdUnit);
+    const windSpd = convertSpd(data.wind_speed, this.units.speed).toFixed(0);
+    const gust = calcGust(data.wind_gust, this.units.speed);
     const windDir = getWndDir(data.wind_deg);
     const { pressure, humidity } = data;
 
@@ -45,87 +107,70 @@ const widget = {
     const sunset = new Date((data.sunset + result.timezone_offset) * 1000);
     const sunsetHour = sunset.getHours().toString().padStart(2, '0');
     const sunsetMin = sunset.getMinutes().toString().padStart(2, '0');
-    let warnings = '';
-    if (result.alerts) warnings = this.formatWarnings(result.alerts);
 
-    document.getElementById('search').innerHTML = 
-    `<form id="searchForm">
-      <p><label for="loc">Location search </label>
-      <input id="loc" type="text" name="loc">
-      <input type="submit" name="submit" value="Go"></p>
-     </form>
-     <div id="results"></div>`;
-    document.getElementById('searchForm').addEventListener('submit', e => this.callSearchApi(e));
+    const warnings = result.alerts ? this.formatWarnings(result.alerts) : '';
+    const safePlace = this.escapeHtml(this.vars.place);
+    const safeDescription = this.escapeHtml(description);
 
-    document.getElementById('container').innerHTML =
-      `<table><tbody>
-        <tr><td colspan="3" style="padding:10px;"><h3>${this.vars.place}</h3>
-        <P><span style="font-size:large;font-weight:bold">${temp}&deg;${tempUnit}</span> f/l ${feelsLike}&deg;${tempUnit}</p>
-        <p style="font-variant:small-caps;">${description}<br>
-        <img src="PNG/${icon}.png" width="80" height="80" alt="${description}"></p></td>
-        <td colspan="4" style="padding:10px;"><p>Wind: ${windSpd}${gust}${spdUnit} ${windDir}<br>
-        Pressure: ${pressure}mb<br>
-        Humidity: ${humidity}&percnt;</p>
-        <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
-        <p>Updated: ${h}:${m}:${s}</p>
-        <div class="tooltip">
-        <span class="tooltiptext">Hover / tap on items in table below for more info</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
-        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-        </svg>
-        </div>
-        </td></tr>
-        <tr>${this.dailyForecast(result.daily, tempUnit, spdUnit, d)}</tr>
-        </td></tr></tbody>
-      </table>
-      </div>`;
-
-    document.getElementById('footer').innerHTML =
-      `${warnings}
-         <p id="links"><a href='hourly.html'>Hourly 48h</a>
-         <a href="5-days.html">3 hourly 5 days</a>
-         <a href="radar/radar.html">Radar</a></p>
-         <div id="tempPrefs">
-          ${tempPrefsDiv}
-         </div>
-         <div id="spdPrefs">
-          ${spdPrefsDiv}
-         </div>
-       <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank">OpenWeather</a></p>`;
-    document.getElementById('tempUnits').addEventListener('change', e => this.changeUnits(e));
-    document.getElementById('spdUnits').addEventListener('change', e => this.changeUnits(e));
+    document.getElementById('container').innerHTML = `
+      <table><tbody>
+        <tr>
+          <td colspan="3" style="padding:10px;">
+            <h3>${safePlace}</h3>
+            <p><span style="font-size:large;font-weight:bold">${temp}&deg;${this.units.temp}</span> f/l ${feelsLike}&deg;${this.units.temp}</p>
+            <p style="font-variant:small-caps;">${safeDescription}<br>
+            <img src="PNG/${icon}.png" width="80" height="80" alt="${safeDescription}"></p>
+          </td>
+          <td colspan="4" style="padding:10px;">
+            <p>Wind: ${windSpd}${gust}${this.units.speed} ${windDir}<br>
+            Pressure: ${pressure}mb<br>
+            Humidity: ${humidity}&percnt;</p>
+            <p>Sunrise: ${sunriseHour}:${sunriseMin}<br>Sunset: ${sunsetHour}:${sunsetMin}</p>
+            <p>Updated: ${h}:${m}:${s}</p>
+            <div class="tooltip">
+            <span class="tooltiptext">Hover / tap on items in table below for more info</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+            </svg>
+            </div>
+          </td>
+        </tr>
+        <tr>${this.dailyForecast(result.daily)}</tr>
+      </tbody></table>
+      ${warnings}`;
     this.toggleWarnings(document.querySelector('.warning-btn'));
   },
 
-  dailyForecast(data, tempUnit, spdUnit, d) {
+  dailyForecast(data) {
     let forecastTable = '';
-    for (let i = 0; i < 5; i++) {
-      d = new Date(data[i].dt * 1000).getDay();
-      d = this.dayArray[d];
+    const limit = Math.min(CONFIG.forecastDays, data.length);
 
-      const tempMax = convertTemp(data[i].temp.max, tempUnit).toFixed(0);
-      const tempMin = convertTemp(data[i].temp.min, tempUnit).toFixed(0);
+    for (let i = 0; i < limit; i++) {
+      const dayDate = new Date(data[i].dt * 1000).getDay();
+      const dayName = this.dayArray[dayDate];
+      const tempMax = convertTemp(data[i].temp.max, this.units.temp).toFixed(0);
+      const tempMin = convertTemp(data[i].temp.min, this.units.temp).toFixed(0);
       const dailyDesc = data[i].weather[0].description.toUpperCase();
+      const safeDailyDesc = this.escapeHtml(dailyDesc);
       const dailyIcon = data[i].weather[0].icon;
-      const dailyWindSpd = convertSpd(data[i].wind_speed, spdUnit).toFixed(0);
-      const dailyGust = calcGust(data[i].wind_gust, spdUnit);
+      const dailyWindSpd = convertSpd(data[i].wind_speed, this.units.speed).toFixed(0);
+      const dailyGust = calcGust(data[i].wind_gust, this.units.speed);
       const dailyWindDir = getWndDir(data[i].wind_deg);
-      let rain = '';
-      data[i].rain ? rain = data[i].rain.toFixed(1) : rain = '0';
+      const rain = data[i].rain ? data[i].rain.toFixed(1) : '0';
       const POP = Math.round(data[i].pop * 100);
       const dailyPres = Math.round(data[i].pressure);
-      const { summary } = data[i];
+      const summary = this.escapeHtml(data[i].summary || '');
 
-      forecastTable +=
-        `<td><div>${d}</div>
-         <div class="tooltip"><span class="tooltiptext">Min/max temp</span>${tempMax}/${tempMin}&deg;${tempUnit}</div>
-         <div class="tooltip"><span class="tooltiptext">${dailyDesc}</span>
+      forecastTable += `
+        <td><div>${dayName}</div>
+         <div class="tooltip"><span class="tooltiptext">Min/max temp</span>${tempMax}/${tempMin}&deg;${this.units.temp}</div>
+         <div class="tooltip"><span class="tooltiptext">${safeDailyDesc}</span>
          <img src="PNG/${dailyIcon}.png"
            width="30" height="30"
-           alt="${dailyDesc}">       
+           alt="${safeDailyDesc}">       
          </div>
-         <div class="tooltip"><span class="tooltiptext">Wind speed/gust</span>${dailyWindSpd}${dailyGust}${spdUnit}</div>
+         <div class="tooltip"><span class="tooltiptext">Wind speed/gust</span>${dailyWindSpd}${dailyGust}${this.units.speed}</div>
          <div class="tooltip"><span class="tooltiptext">Wind direction</span>${dailyWindDir}</div>
          <div class="tooltip"><span class="tooltiptext">Chance of rain</span>${POP}&percnt;</div>
          <div class="tooltip"><span class="tooltiptext">Amount of rain</span>${rain}mm</div>
@@ -136,11 +181,11 @@ const widget = {
     return forecastTable;
   },
 
-  generateRadioButtons(prefs, selectedUnit, name) {
-    let prefsDiv = `<form id="${name}">`;
+  generateRadioButtons(prefs, selectedUnit, name, label) {
+    let prefsDiv = `<form id="${name}" role="group" aria-label="${label}">`;
     for (const pref of prefs) {
       const checked = (pref === selectedUnit) ? 'checked' : '';
-      prefsDiv += `<label><input type="radio" name="${name}" value="${pref}"  ${checked}>${pref}</label>`;
+      prefsDiv += `<label><input type="radio" name="${name}" value="${pref}" ${checked}>${pref}</label>`;
     }
 
     prefsDiv += '</form>';
@@ -156,82 +201,121 @@ const widget = {
   toggleWarnings(warningBtn) {
     if (!warningBtn) return;
     warningBtn.addEventListener('click', () => {
-      Array.from(document.querySelectorAll('.warning-txt'))
-        .forEach(w => {
-          if (w.style.display === 'none') {
-            w.style.display = 'block';
-          } else {
-            w.style.display = 'none';
-          }
-        });
+      const warningTexts = document.querySelectorAll('.warning-txt');
+      const isHidden = warningTexts[0]?.style.display === 'none';
+      warningTexts.forEach(w => {
+        w.style.display = isHidden ? 'block' : 'none';
+      });
+      warningBtn.setAttribute('aria-expanded', isHidden);
     });
   },
 
   formatWarnings(warnings) {
-    let warningsText = '<button class="warning-btn" title="Click to view">Weather Warning</button>';
+    let warningsText = '<button class="warning-btn" title="Click to view" aria-expanded="false">Weather Warning</button>';
     warnings.forEach(warning => {
-       try {
+      try {
         let start = new Date(warning.start * 1000);
         start = `${this.dayArray[start.getDay()]}, ${start.getHours().toString().padStart(2, '0')}hrs`;
         let end = new Date(warning.end * 1000);
         end = `${this.dayArray[end.getDay()]}, ${end.getHours().toString().padStart(2, '0')}hrs`;
-        const event = `<strong>${warning.event}</strong>`;
-        const desc = warning.description.replace(/\n/g, '');
-        const warningText = `<div class="warning-txt" style="display:none">
+        const event = `<strong>${this.escapeHtml(warning.event)}</strong>`;
+        const desc = this.escapeHtml(warning.description.replace(/\n/g, ''));
+        const warningText = `<div class="warning-txt" style="display:none" aria-live="polite">
                               <p>${event}</p>
                               <p>${start} - ${end}</p>
                               <p style="text-align:left">${desc}</p>
-                            </div>`
+                            </div>`;
         warningsText += warningText;
-       } catch(err) {
-        console.log(err);
+      } catch (err) {
+        console.error('Error formatting warning:', err);
       }
     });
-      return warningsText;
+    return warningsText;
   },
 
   renderSearchResults(result) {
-    document.getElementById('results').innerHTML = '';
-    if (result.length > 0) {
+    const resultsContainer = document.getElementById('results');
+    resultsContainer.innerHTML = '';
+    if (result && result.length > 0) {
       result.forEach(res => {
         const link = document.createElement('p');
         link.textContent = `${res.name} ${res.state || res.country}`;
-        document.getElementById('results').append(link);
+        link.setAttribute('role', 'button');
+        link.setAttribute('tabindex', '0');
         link.addEventListener('click', () => this.locationSelected(res.lat, res.lon, res.name, res.state || res.country));
+        link.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.locationSelected(res.lat, res.lon, res.name, res.state || res.country);
+          }
+        });
+        resultsContainer.append(link);
       });
-    } else document.getElementById('results').innerHTML = '<p>No results</p>';
+    } else {
+      resultsContainer.innerHTML = '<p>No results</p>';
+    }
   },
 
   locationSelected(lat, lon, place, state) {
-    localStorage.setItem('vars', `{"lat": ${lat}, "lon": ${lon}, "place": "${place} ${state}"}`);
-    this.vars = JSON.parse(`{"lat": ${lat}, "lon": ${lon}, "place": "${place} ${state}"}`);
+    if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) {
+      this.showError('Invalid location coordinates');
+      return;
+    }
+
+    const fullPlace = `${place} ${state}`;
+    const vars = { lat, lon, place: fullPlace };
+    localStorage.setItem('vars', JSON.stringify(vars));
+    this.vars = vars;
+    document.getElementById('results').innerHTML = '';
     this.callWeatherApi();
   },
 
   callSearchApi(e) {
-    e.preventDefault(); // Needed to stop calling new html doc on submit which cancels fetch
-    const loc = document.getElementById('loc').value;
-    if (loc && this.hash) {
-      this.callFetch(
-        `https://api.openweathermap.org/geo/1.0/direct?q=${loc}&limit=5&appid=${this.hash}`,
-        this.renderSearchResults.bind(this)
-      );
+    e.preventDefault();
+    const loc = document.getElementById('loc').value.trim();
+    if (!loc) {
+      this.showError('Please enter a location');
+      return;
     }
+
+    if (!CONFIG.apiKey) {
+      this.showError('API key not configured');
+      return;
+    }
+
+    const encodedLoc = encodeURIComponent(loc);
+    const url = `${CONFIG.geocodeUrl}?q=${encodedLoc}&limit=${CONFIG.searchLimit}&appid=${CONFIG.apiKey}`;
+    this.callFetch(url, this.renderSearchResults.bind(this));
   },
 
   callWeatherApi() {
     const { lat, lon } = this.vars;
-    if (lat && lon && this.hash) {
-      this.callFetch(
-        `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely&units=metric&appid=${this.hash}`,
-        this.weatherApiCallback.bind(this)
-      );
+    if (!lat || !lon) {
+      this.showError('Invalid location');
+      return;
     }
+
+    if (!CONFIG.apiKey) {
+      this.showError('API key not configured');
+      return;
+    }
+
+    const url = `${CONFIG.weatherUrl}?lat=${lat}&lon=${lon}&exclude=minutely&units=metric&appid=${CONFIG.apiKey}`;
+    this.callFetch(url, this.weatherApiCallback.bind(this));
   },
 
   weatherApiCallback(response) {
-    sessionStorage.setItem('weather_data', JSON.stringify(response));
-    this.renderWidget();
+    if (!response) {
+      this.showError('Empty response from weather API');
+      return;
+    }
+
+    try {
+      sessionStorage.setItem('weather_data', JSON.stringify(response));
+      this.renderWidget();
+    } catch (err) {
+      this.showError(`Failed to save weather data: ${err.message}`);
+    }
   },
 
   callFetch(url, callback) {
@@ -240,14 +324,49 @@ const widget = {
       .then(response => {
         this.loader.classList.remove('display');
         if (!response.ok) {
-          throw new Error(`Network response not ok: ${response.statusText}`);
+          if (response.status === 401) {
+            throw new Error('Invalid API key');
+          }
+
+          if (response.status === 429) {
+            throw new Error('API rate limit exceeded');
+          }
+
+          throw new Error(`Network error: ${response.status}`);
         }
 
         return response.json();
       })
-      .then(result => callback(result))
-      .catch(err => alert(`Error: ${err}`))
+      .then(result => {
+        if (result.cod && result.message) {
+          throw new Error(result.message);
+        }
+
+        callback(result);
+      })
+      .catch(err => this.showError(err.message));
+  },
+
+  showError(message) {
+    this.loader.classList.remove('display');
+    const errorDiv = document.createElement('div');
+    errorDiv.setAttribute('role', 'alert');
+    errorDiv.setAttribute('aria-live', 'assertive');
+    errorDiv.style.cssText = 'background: #fee; border: 1px solid #c00; padding: 10px; margin: 10px; color: #c00;';
+    errorDiv.textContent = message;
+    const container = document.getElementById('container');
+    if (container) {
+      container.innerHTML = '';
+      container.appendChild(errorDiv);
+    }
+  },
+
+  escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   },
 };
 
-widget.callWeatherApi();
+widget.init();
