@@ -30,8 +30,21 @@ const widget = {
     localStorage.units || localStorage.setItem('units', CONFIG.defaultUnits);
     localStorage.vars || localStorage.setItem('vars', CONFIG.defaultVars);
 
-    this.vars = JSON.parse(localStorage.getItem('vars'));
-    this.units = JSON.parse(localStorage.getItem('units'));
+    try {
+      this.vars = JSON.parse(localStorage.getItem('vars'));
+    } catch {
+      this.showError('Invalid location data. I\'ll try resetting defaults');
+      localStorage.setItem('vars', CONFIG.defaultVars);
+      this.loadStorage();
+    }
+
+    try {
+      this.units = JSON.parse(localStorage.getItem('units'));
+    } catch {
+      this.showError('Invalid units data. I\'ll try resetting defaults');
+      localStorage.setItem('units', CONFIG.defaultUnits);
+      this.loadStorage();
+    }
   },
 
   createSearch() {
@@ -211,7 +224,7 @@ const widget = {
   },
 
   formatWarnings(warnings) {
-    let warningsText = '<button class="warning-btn" title="Click to view" aria-expanded="false">Weather Warning</button>';
+    let warningsText = '<button class="warning-btn" title="Click to view" aria-expanded="false">⚠️ Weather Warning</button>';
     warnings.forEach(warning => {
       try {
         let start = new Date(warning.start * 1000);
