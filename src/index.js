@@ -1,8 +1,8 @@
 'use strict';
 
-import { getHash, convertSpd, convertTemp, calcGust, getWndDir } from './utils.js';
+import { getHash, convertSpd, convertTemp, calcGust, getWndDir, showError } from './utils.js';
 
-const widget = {
+const Widget = {
   apiKey: getHash(),
   defaultUnits: '{ "temp": "C", "speed": "mph" }',
   defaultVars: '{ "lat": 50.15, "lon": -5.07, "place": "Falmouth" }',
@@ -34,7 +34,7 @@ const widget = {
     try {
       this.vars = JSON.parse(localStorage.getItem('vars'));
     } catch {
-      this.showError('Invalid location data. I\'ll try resetting defaults');
+      showError('Invalid location data. I\'ll try resetting defaults');
       localStorage.setItem('vars', this.defaultVars);
       this.loadStorage();
     }
@@ -42,7 +42,7 @@ const widget = {
     try {
       this.units = JSON.parse(localStorage.getItem('units'));
     } catch {
-      this.showError('Invalid units data. I\'ll try resetting defaults');
+      showError('Invalid units data. I\'ll try resetting defaults');
       localStorage.setItem('units', this.defaultUnits);
       this.loadStorage();
     }
@@ -86,7 +86,7 @@ const widget = {
   renderWidget() {
     const storedData = sessionStorage.getItem('weather_data');
     if (!storedData) {
-      this.showError('No weather data available');
+      showError('No weather data available');
       return;
     }
 
@@ -94,12 +94,12 @@ const widget = {
     try {
       result = JSON.parse(storedData);
     } catch (err) {
-      this.showError(`Failed to parse weather data: ${err}`);
+      showError(`Failed to parse weather data: ${err}`);
       return;
     }
 
     if (!result.current) {
-      this.showError('Invalid weather data format');
+      showError('Invalid weather data format');
       return;
     }
 
@@ -131,13 +131,13 @@ const widget = {
     document.getElementById('container').innerHTML = `
       <table><tbody>
         <tr>
-          <td colspan="3" style="padding:10px;">
+          <td colspan="3" class="cell-pad">
             <h3>${safePlace}</h3>
             <p><span style="font-size:large;font-weight:bold">${temp}&deg;${this.units.temp}</span> f/l ${feelsLike}&deg;${this.units.temp}</p>
-            <p style="font-variant:small-caps;">${safeDescription}<br>
+            <p class="temp-smallcaps">${safeDescription}<br>
             <img src="PNG/${icon}.png" width="80" height="80" alt="${safeDescription}"></p>
           </td>
-          <td colspan="4" style="padding:10px;">
+          <td colspan="4" class="cell-pad">
             <p>Wind: ${windSpd}${gust}${this.units.speed} ${windDir}<br>
             Pressure: ${pressure}mb<br>
             Humidity: ${humidity}&percnt;</p>
@@ -236,10 +236,10 @@ const widget = {
         end = `${this.dayArray[end.getDay()]}, ${end.getHours().toString().padStart(2, '0')}hrs`;
         const event = `<strong>${this.escapeHtml(warning.event)}</strong>`;
         const desc = this.escapeHtml(warning.description.replace(/\n/g, ''));
-        const warningText = `<div class="warning-txt" style="display:none" aria-live="polite">
+        const warningText = `<div class="warning-txt" aria-live="polite">
                               <p>${event}</p>
                               <p>${start} - ${end}</p>
-                              <p style="text-align:left">${desc}</p>
+                              <p>${desc}</p>
                             </div>`;
         warningsText += warningText;
       } catch (err) {
@@ -274,7 +274,7 @@ const widget = {
 
   locationSelected(lat, lon, place, state) {
     if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) {
-      this.showError('Invalid location coordinates');
+      showError('Invalid location coordinates');
       return;
     }
 
@@ -288,7 +288,7 @@ const widget = {
 
   handleGeolocation() {
     if (!navigator.geolocation) {
-      this.showError('Geolocation is not supported by your browser');
+      showError('Geolocation is not supported by your browser');
       return;
     }
 
@@ -300,7 +300,7 @@ const widget = {
         this.callFetch(url, this.renderSearchResults.bind(this));
       },
       () => {
-        this.showError('Unable to get your location');
+        showError('Unable to get your location');
         this.loader.classList.remove('display');
       },
       {timeout: 10000}
@@ -311,12 +311,12 @@ const widget = {
     e.preventDefault();
     const loc = document.getElementById('loc').value.trim();
     if (!loc) {
-      this.showError('Please enter a location');
+      showError('Please enter a location');
       return;
     }
 
     if (!this.apiKey) {
-      this.showError('API key not configured');
+      showError('API key not configured');
       return;
     }
 
@@ -328,12 +328,12 @@ const widget = {
   callWeatherApi() {
     const { lat, lon } = this.vars;
     if (!lat || !lon) {
-      this.showError('Invalid location');
+      showError('Invalid location');
       return;
     }
 
     if (!this.apiKey) {
-      this.showError('API key not configured');
+      showError('API key not configured');
       return;
     }
 
@@ -343,7 +343,7 @@ const widget = {
 
   weatherApiCallback(response) {
     if (!response) {
-      this.showError('Empty response from weather API');
+      showError('Empty response from weather API');
       return;
     }
 
@@ -351,7 +351,7 @@ const widget = {
       sessionStorage.setItem('weather_data', JSON.stringify(response));
       this.renderWidget();
     } catch (err) {
-      this.showError(`Failed to save weather data: ${err.message}`);
+      showError(`Failed to save weather data: ${err.message}`);
     }
   },
 
@@ -381,27 +381,16 @@ const widget = {
 
         callback(result);
       })
-      .catch(err => this.showError(err.message));
+      .catch(err => {
+        showError(err.message);
+        this.loader.classList.remove('display');
+      });
   },
 
   startAutoRefresh() {
     setInterval(() => {
       this.callWeatherApi();
     }, this.refreshInterval);
-  },
-
-  showError(message) {
-    this.loader.classList.remove('display');
-    const errorDiv = document.createElement('div');
-    errorDiv.setAttribute('role', 'alert');
-    errorDiv.setAttribute('aria-live', 'assertive');
-    errorDiv.style.cssText = 'background: #fee; border: 1px solid #c00; padding: 10px; margin: 10px; color: #c00;';
-    errorDiv.textContent = message;
-    const container = document.getElementById('container');
-    if (container) {
-      container.innerHTML = '';
-      container.appendChild(errorDiv);
-    }
   },
 
   escapeHtml(str) {
@@ -412,4 +401,4 @@ const widget = {
   },
 };
 
-widget.init();
+Widget.init();

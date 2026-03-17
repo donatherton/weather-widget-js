@@ -80,3 +80,15 @@ export function cloudColour(cloud) {
   }
 }
 
+export function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.setAttribute('role', 'alert');
+    errorDiv.setAttribute('aria-live', 'assertive');
+    errorDiv.style.cssText = 'background: #fee; border: 1px solid #c00; padding: 10px; margin: 10px; color: #c00;';
+    errorDiv.textContent = message;
+    const container = document.getElementById('container');
+    if (container) {
+      container.innerHTML = '';
+      container.appendChild(errorDiv);
+    }
+  }

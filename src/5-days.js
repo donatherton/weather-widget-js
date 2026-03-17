@@ -1,12 +1,30 @@
-"use strict";
+'use strict';
 
-import { getHash, convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour } from './utils.js';
+import { getHash, convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour, showError } from './utils.js';
 
-const fiveDays = {
+const FiveDays = {
   hash: getHash(),
   loader: document.getElementById('loading'),
-  vars: JSON.parse(localStorage.getItem('vars')),
-  units: JSON.parse(localStorage.getItem('units')),
+  vars: null,
+  units: null,
+
+  init() {
+    try {
+      this.vars = JSON.parse(localStorage.getItem('vars'));
+    } catch {
+      showError('Invalid location data');
+      this.vars = { lat: 50.15, lon: -5.07, place: 'Falmouth' };
+    }
+
+    try {
+      this.units = JSON.parse(localStorage.getItem('units'));
+    } catch {
+      showError('Invalid units data');
+      this.units = { temp: 'C', speed: 'mph' };
+    }
+
+    this.callApi();
+  },
 
   renderWidget(data) {
     let forecastTable = '';
@@ -44,15 +62,15 @@ const fiveDays = {
       const day = days[time.getDay()];
 
       const dn = dayNight(Number(sunriseHour), Number(sunsetHour), ftime);
-      let dnColour = '';
-      if (dn === '-d') dnColour = 'style="background-color:#fff"';
-      else if (dn === '-n') dnColour = 'style="background-color:#ddd"';
+      let dnClass = 'forecast';
+      if (dn === '-d') dnClass = 'forecast day';
+      else if (dn === '-n') dnClass = 'forecast night';
 
       forecastTable += `
-         <tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
-           <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${tempUnit}</strong></td>
+         <tr class="${dnClass}"><td><strong>${day} ${ftime}h</strong></td>
+           <td class="temp-pad-right" style="color:${tbg}"><strong>${temp}&deg;${tempUnit}</strong></td>
            <td><image src="PNG/${icon}.png" alt="${description}" width="30" height="30"></td>
-           <td style="font-variant:small-caps;">${description}</td><td>${rain}</td>
+           <td class="temp-smallcaps">${description}</td><td>${rain}</td>
            <td><span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
            <td>${wndDir}</td><td style="background-color: ${clColour}">${cloud}&percnt;</td><td>${pressure}mb</td></tr>`;
     }
@@ -94,9 +112,9 @@ const fiveDays = {
           return response.json();
         })
         .then(result => this.renderWidget(result))
-        .catch(err => alert(`Error: ${err}`))
+        .catch(err => showError(`Error: ${err}`))
     }
   },
 };
 
-fiveDays.callApi();
+FiveDays.init();

@@ -1,13 +1,43 @@
-import { convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour } from './utils.js';
-
 'use strict';
 
-const hourly = {
-  place: JSON.parse(localStorage.getItem('vars')).place,
-  units: JSON.parse(localStorage.getItem('units')),
+import { convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour, showError } from './utils.js';
+
+const Hourly = {
+  place: null,
+  units: null,
+
+  init() {
+    try {
+      const storedVars = JSON.parse(localStorage.getItem('vars'));
+      this.place = storedVars.place;
+    } catch {
+      showError('Invalid location data');
+      this.place = 'Unknown';
+    }
+
+    try {
+      this.units = JSON.parse(localStorage.getItem('units'));
+    } catch {
+      showError('Invalid units data');
+      this.units = { temp: 'C', speed: 'mph' };
+    }
+
+    const data = sessionStorage.getItem('weather_data');
+    if (data) {
+      this.renderWidget(data);
+    } else {
+      showError('No data');
+    }
+  },
 
   renderWidget(result) {
-    const data = JSON.parse(result);
+    let data;
+    try {
+      data = JSON.parse(result);
+    } catch {
+      showError('Failed to parse weather data');
+      return;
+    }
     let forecastTable = '';
 
     let sunrise = data.current.sunrise + data.timezone_offset;
@@ -42,18 +72,18 @@ const hourly = {
       const day = days[time.getDay()];
 
       const dn = dayNight(Number(sunriseHour), Number(sunsetHour), ftime);
-      let dnColour = '';
+      let dnClass = 'forecast';
       if (dn === '-d') {
-        dnColour = 'style="background-color:#fff"';
+        dnClass = 'forecast day';
       } else if (dn === '-n') {
-        dnColour = 'style="background-color:#ddd"';
+        dnClass = 'forecast night';
       }
 
       forecastTable += `
-         <tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
-           <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${tempUnit}</strong></td>
+         <tr class="${dnClass}"><td><strong>${day} ${ftime}h</strong></td>
+           <td class="temp-pad-right" style="color:${tbg}"><strong>${temp}&deg;${tempUnit}</strong></td>
            <td><image src="PNG/${icon}.png" alt="${description}" width="30" height="30"></td>
-           <td style="font-variant:small-caps;">${description}</td><td>${rain}</td>
+           <td class="temp-smallcaps">${description}</td><td>${rain}</td>
            <td>
            <span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
            <td>${wndDir}</td><td style="background-color: ${clColour}">${cloud}&percnt;</td><td>${pressure}mb</td></tr>`;
@@ -83,8 +113,5 @@ const hourly = {
   },
 };
 
-const data = sessionStorage.getItem('weather_data');
-if (data) {
-  hourly.renderWidget(data);
-} else alert('No data');
+Hourly.init();
 

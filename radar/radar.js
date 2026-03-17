@@ -1,42 +1,45 @@
 /* On 2-2-2026 RainViewer removed satellite layers and restricted radar to
  * one colour scheme and max zoom 7. I'll keep the code for these for now
  * for possible re-use later */
-
 'use strict';
 
-(() => {
-    const vars = JSON.parse(localStorage.getItem('vars'));
-    const { lat, lon } = vars;
-    let data = {};
-    let radarOrSat = 'radar';
-    const radarLayer = [];
-    const satLayer = [];
-    let mapLayer = null;// Will reference either radarLayer or satLayer
-    let currentFrame = 0;
-    let ts = '';
-    let frame = null;
-    let colors = 0;
-    let smooth = 0;
-    let snow = 0;
-    let animation = 0;
-    const playBtn = document.getElementById('play');
+const Radar = {
+    vars: JSON.parse(localStorage.getItem('vars')),
+    data: {},
+    radarOrSat: 'radar',
+    radarLayer: [],
+    satLayer: [],
+    mapLayer: null,// Will reference either radarLayer or satLayer
+    currentFrame: 0,
+    ts: '',
+    frame: null,
+    colors : 0,
+    smooth: 0,
+    snow : 0,
+    animation: 0,
+    playBtn: document.getElementById('play'),
+    map: null,
 
-    // document.getElementById('radar').addEventListener('click', e => setRadarOrSat(e));
-    // document.getElementById('satellite').addEventListener('click', e => setRadarOrSat(e));
-    document.getElementById('prevFrame').addEventListener('click', e => nextButton(e));
-    document.getElementById('nextFrame').addEventListener('click', e => nextButton(e));
-    playBtn.addEventListener('click', playStop);
+    init() {
+        // document.getElementById('radar').addEventListener('click', e => setRadarOrSat(e));
+        // document.getElementById('satellite').addEventListener('click', e => setRadarOrSat(e));
+        document.getElementById('prevFrame').addEventListener('click', e => this.nextButton(e));
+        document.getElementById('nextFrame').addEventListener('click', e => this.nextButton(e));
+        this.playBtn.addEventListener('click', this.playStop);
+        this.createMap();
+        this.callApi();
+    },
 
-    const map = L.map('mapid', { maxZoom: 7, zoomControl: false}).setView([lat, lon], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors | Radar data &copy; <a href="https://rainviewer.com">RainViewer</a>'
-    }).addTo(map);
-    const mark = new L.CircleMarker([lat, lon]).addTo(map);
-    L.control.zoom({
-        position: 'bottomleft'
-    }).addTo(map);
-
-    callApi();
+    createMap() {
+        this.map = L.map('mapid', { maxZoom: 7, zoomControl: false}).setView([this.vars.lat, this.vars.lon], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors | Radar data &copy; <a href="https://rainviewer.com">RainViewer</a>'
+        }).addTo(this.map);
+        const mark = new L.CircleMarker([this.vars.lat, this.vars.lon]).addTo(this.map);
+        L.control.zoom({
+            position: 'bottomleft'
+        }).addTo(this.map);
+    },
 
     // function setRadarOrSat(e) {
     //     radarOrSat = e.target.id;
@@ -45,101 +48,101 @@
     //     document.getElementById('play').value = '>>';
     // }
 
-    function nextButton(e) {
+    nextButton(e) {
         let next = 0;
         e.target.id === 'nextFrame' ? next = 1 : next = -1;
-        changeFrame(next);
-    }
+        this.changeFrame(next);
+    },
 
-    function changeFrame(next) {
-        currentFrame += next;
-        if (currentFrame > frame.length - 1) currentFrame -= 1;
-        if (currentFrame < 0) currentFrame += 1;
-        renderLayer(currentFrame);
-        animation = 0;
-    }
+    changeFrame(next) {
+        this.currentFrame += next;
+        if (this.currentFrame > this.frame.length - 1) this.currentFrame -= 1;
+        if (this.currentFrame < 0) this.currentFrame += 1;
+        this.renderLayer(this.currentFrame);
+        this.animation = 0;
+    },
 
-    function playStop() {
-        if (animation) {
-            clearTimeout(animation);
-            animation = 0;
+    playStop() {
+        if (this.animation) {
+            clearTimeout(this.animation);
+            this.animation = 0;
             document.getElementById('play').value = '>>';
         }
         else {
-            if (currentFrame >= mapLayer.length - 1) {
-                currentFrame = 0;
-                for (let i = mapLayer.length - 1; i >= 0; i--) {
-                    renderLayer(i);
+            if (this.currentFrame >= this.mapLayer.length - 1) {
+                this.currentFrame = 0;
+                for (let i = this.mapLayer.length - 1; i >= 0; i--) {
+                    this.renderLayer(i);
                 }
             }
-            for (let i = currentFrame; i < mapLayer.length; i++) {
-                mapLayer[i].addTo(map).setOpacity(0);
+            for (let i = this.currentFrame; i < this.mapLayer.length; i++) {
+                this.mapLayer[i].addTo(this.map).setOpacity(0);
             }
 
-            animation = 1;
-            playAnimation();
+            this.animation = 1;
+            this.playAnimation();
         }
-    }
+    },
 
-    function playAnimation() { 
-        if (animation && currentFrame < mapLayer.length) {
+    playAnimation() { 
+        if (this.animation && this.currentFrame < this.mapLayer.length) {
             playBtn.value = '| |';
-            mapLayer[currentFrame].setOpacity(0.7);
-            displayTime(frame[currentFrame].time);
-            if (mapLayer[currentFrame - 1]) map.removeLayer(mapLayer[currentFrame - 1]);
-            currentFrame += 1;
-            animation = setTimeout(() => playAnimation(), 1000);
+            this.mapLayer[this.currentFrame].setOpacity(0.7);
+            displayTime(this.frame[this.currentFrame].time);
+            if (this.mapLayer[this.currentFrame - 1]) this.map.removeLayer(this.mapLayer[this.currentFrame - 1]);
+            this.currentFrame += 1;
+            this.animation = setTimeout(() => this.playAnimation(), 1000);
             // Detect anination end
-            if (currentFrame === mapLayer.length) {
-                animation = 0;
+            if (this.currentFrame === this.mapLayer.length) {
+                this.animation = 0;
                 playBtn.value = '>>';
             }
         }
-    }
+    },
 
-    function displayTime(t) {
+    displayTime(t) {
         const timeStamp = new Date(t * 1000);
-        ts = `${timeStamp.getHours().toString().padStart(2, '0')}:${timeStamp.getMinutes().toString().padStart(2, '0')}`;
-        document.getElementById('time').innerHTML = `Frame time: ${ts}`;
-    }
+        this.ts = `${timeStamp.getHours().toString().padStart(2, '0')}:${timeStamp.getMinutes().toString().padStart(2, '0')}`;
+        document.getElementById('time').innerHTML = `Frame time: ${this.ts}`;
+    },
 
-    function createRadarLayer() {
-        if (radarOrSat === 'radar') {
-            mapLayer = radarLayer;
-            frame = data.radar.past;
-            colors = 8;
-            smooth = 1;
-            snow = 1;
-            currentFrame = frame.length - 1;
+    createRadarLayer() {
+        if (this.radarOrSat === 'radar') {
+            this.mapLayer = this.radarLayer;
+            this.frame = this.data.radar.past;
+            this.colors = 8;
+            this.smooth = 1;
+            this.snow = 1;
+            this.currentFrame = this.frame.length - 1;
         } else {
-            mapLayer = satLayer;
-            frame = data.satellite.infrared;
-            colors = 0;
-            smooth = 0;
-            snow = 0;
-            currentFrame = frame.length - 1;
+            this.mapLayer = this.satLayer;
+            this.frame = this.data.satellite.infrared;
+            this.colors = 0;
+            this.smooth = 0;
+            this.snow = 0;
+            this.currentFrame = this.frame.length - 1;
         }
 
-        renderLayer(currentFrame);
-    }
+        this.renderLayer(this.currentFrame);
+    },
 
-    function renderLayer(newFrame) {
-        radarLayer.forEach(layer => map.removeLayer(layer));
-        satLayer.forEach(layer => map.removeLayer(layer));
-        if (frame[newFrame]) {
-            mapLayer[newFrame] ||= new L.TileLayer(`${data.host}${frame[newFrame].path}/256/{z}/{x}/{y}/${colors}/${smooth}_${snow}.png`,
+    renderLayer(newFrame) {
+        this.radarLayer.forEach(layer => this.map.removeLayer(layer));
+        this.satLayer.forEach(layer => this.map.removeLayer(layer));
+        if (this.frame[newFrame]) {
+            this.mapLayer[newFrame] ||= new L.TileLayer(`${this.data.host}${this.frame[newFrame].path}/256/{z}/{x}/{y}/${this.colors}/${this.smooth}_${this.snow}.png`,
                 {
                     tileSize: 256,
                     opacity: 0.7,
                 }
             );
 
-            map.addLayer(mapLayer[newFrame]);
-            displayTime(frame[newFrame].time);
+            this.map.addLayer(this.mapLayer[newFrame]);
+            this.displayTime(this.frame[newFrame].time);
         }
-    }
+    },
 
-    function callApi() {
+    callApi() {
         //displayLoading();
         fetch('https://api.rainviewer.com/public/weather-maps.json')
             .then(response => {
@@ -151,9 +154,11 @@
                 return response.json();
             })
             .then(result => {
-                data = result;
-                createRadarLayer();
+                this.data = result;
+                this.createRadarLayer();
             })
-        .catch(err => alert(`Error: ${err}`));
-    }
-})();
+            .catch(err => alert(`Error: ${err}`));
+    },
+}
+
+Radar.init();
