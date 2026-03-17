@@ -9,6 +9,7 @@ const CONFIG = {
   forecastDays: 5,
   searchLimit: 5,
   geocodeUrl: 'https://api.openweathermap.org/geo/1.0/direct',
+  reverseGeoUrl: 'https://api.openweathermap.org/geo/1.0/reverse',
   weatherUrl: 'https://api.openweathermap.org/data/3.0/onecall',
 };
 
@@ -52,10 +53,12 @@ const widget = {
     <form id="searchForm">
       <p><label for="loc">Location search </label>
       <input id="loc" type="text" name="loc" aria-label="Location search">
-      <input type="submit" name="submit" value="Go"></p>
+      <input type="submit" name="submit" value="Go">
+      <button type="button" id="geoBtn" title="Use my location" aria-label="Use my location"><img src="./PNG/location.svg" height="15" alt="Use my location"></button></p>
     </form>
     <div id="results" aria-live="polite"></div>`;
     document.getElementById('searchForm').addEventListener('submit', e => this.callSearchApi(e));
+    document.getElementById('geoBtn').addEventListener('click', () => this.handleGeolocation());
   },
 
   createFooter() {
@@ -281,6 +284,32 @@ const widget = {
     this.vars = vars;
     document.getElementById('results').innerHTML = '';
     this.callWeatherApi();
+  },
+
+  handleGeolocation() {
+    if (!navigator.geolocation) {
+      this.showError('Geolocation is not supported by your browser');
+      return;
+    }
+
+    this.loader.classList.add('display');
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0,
+    };
+    navigator.geolocation.getCurrentPosition(
+      async position => {
+        const { latitude, longitude } = position.coords;
+        const url = `${CONFIG.reverseGeoUrl}?lat=${latitude}&lon=${longitude}&limit=${CONFIG.searchLimit}&appid=${CONFIG.apiKey}`;
+        this.callFetch(url, this.renderSearchResults.bind(this));
+      },
+      () => {
+        this.showError('Unable to get your location');
+        this.loader.classList.remove('display');
+      },
+      options
+    );
   },
 
   callSearchApi(e) {

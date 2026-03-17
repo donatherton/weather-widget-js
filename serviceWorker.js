@@ -32,7 +32,8 @@ const assets = [
   "./PNG/13n.png",
   "./PNG/50d.png",
   "./PNG/50n.png",
-  "./PNG/fulmine.jpg"
+  "./PNG/fulmine.jpg",
+  "./PNG/location.svg"
 ]
 
 self.addEventListener('install', (event) => {

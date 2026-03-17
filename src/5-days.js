@@ -48,18 +48,17 @@ const fiveDays = {
       if (dn === '-d') dnColour = 'style="background-color:#fff"';
       else if (dn === '-n') dnColour = 'style="background-color:#ddd"';
 
-      forecastTable +=
-        `<tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
+      forecastTable += `
+         <tr class="forecast"${dnColour}><td><strong>${day} ${ftime}h</strong></td>
            <td style="padding-right:3px;color:${tbg}"><strong>${temp}&deg;${tempUnit}</strong></td>
            <td><image src="PNG/${icon}.png" alt="${description}" width="30" height="30"></td>
            <td style="font-variant:small-caps;">${description}</td><td>${rain}</td>
-           <td style="background-color: ${clColour}">${cloud}&percnt;</td><td>
-           <span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
-           <td>${wndDir}</td><td>${pressure}mb</td></tr>`;
+           <td><span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
+           <td>${wndDir}</td><td style="background-color: ${clColour}">${cloud}&percnt;</td><td>${pressure}mb</td></tr>`;
     }
 
-    document.getElementById('container').innerHTML = 
-    `<table>
+    document.getElementById('container').innerHTML = `
+     <table>
       <thead>
         <tr><td colspan="3"><button class="back_button" onclick="history.back()">Back</button></td>
           <td colspan="6"><h3>5 day forecast for ${this.vars.place}</h3></td></tr>
@@ -69,9 +68,9 @@ const fiveDays = {
           <td>&nbsp;</td>
           <td>&nbsp;</td>
           <td>Rain</td>
-          <td>Cloud</td>
           <td>Wind</td>
           <td>Dir</td>
+          <td>Cloud</td>
           <td>Pres</td>
         </tr>
       </thead>
