@@ -2,7 +2,7 @@
 
 import { getHash, convertSpd, convertTemp, calcGust, getWndDir } from './utils.js';
 
-const CONFIG = {
+const widget = {
   apiKey: getHash(),
   defaultUnits: '{ "temp": "C", "speed": "mph" }',
   defaultVars: '{ "lat": 50.15, "lon": -5.07, "place": "Falmouth" }',
@@ -11,31 +11,31 @@ const CONFIG = {
   geocodeUrl: 'https://api.openweathermap.org/geo/1.0/direct',
   reverseGeoUrl: 'https://api.openweathermap.org/geo/1.0/reverse',
   weatherUrl: 'https://api.openweathermap.org/data/3.0/onecall',
-};
-
-const widget = {
+  refreshInterval: 600000,
   vars: null,
   units: null,
   loader: document.getElementById('loading'),
   dayArray: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  refreshTimer: null,
 
   init() {
     this.loadStorage();
     this.createSearch();
     this.createFooter();
     this.callWeatherApi();
+    this.startAutoRefresh();
   },
 
   loadStorage() {
     /* Check whether prefs in storage, save defaults if not */
-    localStorage.units || localStorage.setItem('units', CONFIG.defaultUnits);
-    localStorage.vars || localStorage.setItem('vars', CONFIG.defaultVars);
+    localStorage.units || localStorage.setItem('units', this.defaultUnits);
+    localStorage.vars || localStorage.setItem('vars', this.defaultVars);
 
     try {
       this.vars = JSON.parse(localStorage.getItem('vars'));
     } catch {
       this.showError('Invalid location data. I\'ll try resetting defaults');
-      localStorage.setItem('vars', CONFIG.defaultVars);
+      localStorage.setItem('vars', this.defaultVars);
       this.loadStorage();
     }
 
@@ -43,7 +43,7 @@ const widget = {
       this.units = JSON.parse(localStorage.getItem('units'));
     } catch {
       this.showError('Invalid units data. I\'ll try resetting defaults');
-      localStorage.setItem('units', CONFIG.defaultUnits);
+      localStorage.setItem('units', this.defaultUnits);
       this.loadStorage();
     }
   },
@@ -160,7 +160,7 @@ const widget = {
 
   dailyForecast(data) {
     let forecastTable = '';
-    const limit = Math.min(CONFIG.forecastDays, data.length);
+    const limit = Math.min(this.forecastDays, data.length);
 
     for (let i = 0; i < limit; i++) {
       const dayDate = new Date(data[i].dt * 1000).getDay();
@@ -293,22 +293,17 @@ const widget = {
     }
 
     this.loader.classList.add('display');
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0,
-    };
     navigator.geolocation.getCurrentPosition(
       async position => {
         const { latitude, longitude } = position.coords;
-        const url = `${CONFIG.reverseGeoUrl}?lat=${latitude}&lon=${longitude}&limit=${CONFIG.searchLimit}&appid=${CONFIG.apiKey}`;
+        const url = `${this.reverseGeoUrl}?lat=${latitude}&lon=${longitude}&limit=${this.searchLimit}&appid=${this.apiKey}`;
         this.callFetch(url, this.renderSearchResults.bind(this));
       },
       () => {
         this.showError('Unable to get your location');
         this.loader.classList.remove('display');
       },
-      options
+      {timeout: 10000}
     );
   },
 
@@ -320,13 +315,13 @@ const widget = {
       return;
     }
 
-    if (!CONFIG.apiKey) {
+    if (!this.apiKey) {
       this.showError('API key not configured');
       return;
     }
 
     const encodedLoc = encodeURIComponent(loc);
-    const url = `${CONFIG.geocodeUrl}?q=${encodedLoc}&limit=${CONFIG.searchLimit}&appid=${CONFIG.apiKey}`;
+    const url = `${this.geocodeUrl}?q=${encodedLoc}&limit=${this.searchLimit}&appid=${this.apiKey}`;
     this.callFetch(url, this.renderSearchResults.bind(this));
   },
 
@@ -337,12 +332,12 @@ const widget = {
       return;
     }
 
-    if (!CONFIG.apiKey) {
+    if (!this.apiKey) {
       this.showError('API key not configured');
       return;
     }
 
-    const url = `${CONFIG.weatherUrl}?lat=${lat}&lon=${lon}&exclude=minutely&units=metric&appid=${CONFIG.apiKey}`;
+    const url = `${this.weatherUrl}?lat=${lat}&lon=${lon}&exclude=minutely&units=metric&appid=${this.apiKey}`;
     this.callFetch(url, this.weatherApiCallback.bind(this));
   },
 
@@ -387,6 +382,12 @@ const widget = {
         callback(result);
       })
       .catch(err => this.showError(err.message));
+  },
+
+  startAutoRefresh() {
+    setInterval(() => {
+      this.callWeatherApi();
+    }, this.refreshInterval);
   },
 
   showError(message) {

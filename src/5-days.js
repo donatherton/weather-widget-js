@@ -1,6 +1,6 @@
-import { getHash, convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour } from './utils.js';
+"use strict";
 
-"use strict"
+import { getHash, convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour } from './utils.js';
 
 const fiveDays = {
   hash: getHash(),
@@ -36,7 +36,7 @@ const fiveDays = {
       const wndDir = getWndDir(item.wind.deg);
       const { pressure } = item.main;
       let rain = '';
-      item['rain'] ? rain = `<b>${item['rain']['3h'].toFixed(1)}mm</b>` : rain = '0mm';
+      item.rain ? rain = `<b>${item.rain['3h'].toFixed(1)}mm</b>` : rain = '0mm';
 
       time = new Date(time);
       const ftime = time.getHours().toString().padStart(2, 0);
