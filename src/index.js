@@ -69,16 +69,16 @@ const Widget = {
     const spdPrefsDiv = this.generateRadioButtons(spdPrefs, this.units.speed, 'spdUnits', 'Speed');
 
     document.getElementById('footer').innerHTML = `     
-         <p id="links"><a href='hourly.html'>Hourly 48h</a>
-         <a href="5-days.html">3 hourly 5 days</a>
-         <a href="radar/radar.html">Radar</a></p>
-         <div id="tempPrefs" role="group" aria-label="Temperature units">
-          ${tempPrefsDiv}
-         </div>
-         <div id="spdPrefs" role="group" aria-label="Speed units">
-          ${spdPrefsDiv}
-         </div>
-       <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank" rel="noopener noreferrer">OpenWeather</a></p>`;
+       <p id="links"><a href='hourly.html'>Hourly 48h</a>
+       <a href="5-days.html">3 hourly 5 days</a>
+       <a href="radar/radar.html">Radar</a></p>
+       <div id="tempPrefs" role="group" aria-label="Temperature units">
+        ${tempPrefsDiv}
+       </div>
+       <div id="spdPrefs" role="group" aria-label="Speed units">
+        ${spdPrefsDiv}
+       </div>
+     <p>Weather data provided by <a href="https://openweathermap.org/" target="_blank" rel="noopener noreferrer">OpenWeather</a></p>`;
     document.getElementById('tempUnits').addEventListener('change', e => this.changeUnits(e));
     document.getElementById('spdUnits').addEventListener('change', e => this.changeUnits(e));
   },

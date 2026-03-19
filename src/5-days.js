@@ -76,10 +76,12 @@ const FiveDays = {
     }
 
     document.getElementById('container').innerHTML = `
+      <div id="header">
+        <button class="back_button" onclick="history.back()">Back</button>
+        <h3 class="inline">5 day forecast for ${this.vars.place}</h3>
+      </div>
      <table>
       <thead>
-        <tr><td colspan="3"><button class="back_button" onclick="history.back()">Back</button></td>
-          <td colspan="6"><h3>5 day forecast for ${this.vars.place}</h3></td></tr>
         <tr>
           <td></td>
           <td>Temp</td>

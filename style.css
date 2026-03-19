@@ -1,0 +1,251 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #000;
+  color: #fff;
+  font-size: 90%;
+  font-family: sans-serif;
+  line-height: 1.5em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+body.forecast-page {
+  margin: 0;
+  padding: 5px;
+  background-color: #fff;
+  color: #000;
+}
+
+a {
+  color: #fff;
+  background-color: transparent;
+}
+
+#main {
+  display: inline-block;
+  margin: auto;
+  padding: 10px;
+  background-image: url("PNG/fulmine.jpg");
+  background-position: center;
+  background-size: cover;
+  max-width: 35rem;
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin: auto;
+}
+
+table.forecast-table {
+  border-collapse: collapse;
+}
+
+td, div {
+  padding: 0 5px;
+}
+
+td.cell-pad {
+  padding: 10px;
+}
+
+#footer p {
+  text-align: center;
+}
+
+#footer {
+  position: relative;
+}
+
+#links a {
+  margin: 1rem;
+}
+
+#results p {
+  display: block;
+  line-height: 2rem;
+  text-align: center;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+#searchForm {
+  text-align: center;
+}
+
+input[type="submit"] {
+  background-color: #2d386b;
+  color: #fff;
+  border: 1px solid #fff;
+  padding: 2px;
+  margin: 0;
+  cursor: pointer;
+}
+
+input {
+  background-color: #fff;
+  color: #000;
+  margin: 5px;
+}
+
+label {
+  margin: 10px;
+}
+
+input[type="radio"] {
+  width: 1.3em;
+  height: 1.3em;
+  margin: 10px;
+}
+
+.warning-btn {
+  background: #e11e1e;
+  border: 1px solid #fff;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  display: block;
+  width: 15rem;
+  margin: 20px auto;
+}
+
+.warning-txt {
+  max-width: 25rem;
+  margin: auto;
+  display: none;
+  text-align: left;
+}
+
+.warning-txt p {
+  margin: 5px 0;
+}
+
+#geoBtn {
+  height: 25px;
+  border: 1px solid #000;
+  margin: 0;
+  cursor: pointer;
+}
+
+#loading {
+  width: 2rem;
+  height: 2rem;
+  border: 5px solid #f3f3f3;
+  border-top: 6px solid #666666;
+  border-radius: 100%;
+  margin: auto;
+  display: none;
+  animation: spin 1s infinite linear;
+}
+
+#loading.display {
+  display: block;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #222;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #222 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.forecast {
+  border-bottom: 1px solid #000;
+}
+
+.forecast.day {
+  background-color: #fff;
+}
+
+.forecast.night {
+  background-color: #ddd;
+}
+
+.back_button {
+  background-color: #555;
+  color: #fff;
+  border: 1px solid #222;
+  border-radius: 5px;
+  box-shadow: #666666 2px 2px 2px;
+  padding: 10px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.back_button:active,
+.button:active {
+  box-shadow: none;
+}
+
+.temp-smallcaps {
+  font-variant: small-caps;
+}
+
+.temp-pad-right {
+  padding-right: 3px;
+}
+
+#container {
+  width: 100%;
+}
+
+#container > table {
+  margin-top: 50px;
+}
+
+#header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  text-align: center;
+  background: #fff;
+  z-index: 1;
+}
+
+#header .inline {
+  display: inline;
+}
