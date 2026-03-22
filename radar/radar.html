@@ -7,71 +7,18 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <link rel="stylesheet" href="leaflet.css"/>
+        <link rel="stylesheet" href="style.css"/>
         <script src="leaflet.js"></script>
-        <style type="text/css">
-            body {
-                font-size: 80%;
-                text-align: center;
-                font-family: sans-serif;
-                display: flex;
-                justify-content: center;
-            }
-            #timestamp {
-                margin: 1em;
-            }
-            #mapid {
-                position: absolute;
-                top: 0;
-                left: 0; bottom: 0; right: 0;
-            }
-            #controls {
-                position: absolute;
-                top: 10px;
-                z-index: 1000;
-                display: inline-block;
-                background-color: white;
-                padding: 10px;
-                border: 1px solid #fff;
-                border-radius: 5px;
-                box-shadow: 3px 3px 3px #888
-            }
-            .back_button, .button {
-                background-color: #555;
-                color: #fff;
-                border: 1px solid #222;
-                border-radius: 5px;
-                box-shadow: #666666 2px 2px 2px;
-                padding: 10px;
-                margin: 5px;
-                cursor: pointer;
-            }
-            .back_button:active, .button:active {
-                box-shadow: none;
-            }
-            #play {
-               width: 3rem;
-            }
-            input[type="radio"] {
-                width: 1em;
-                height: 1em;
-                margin: 5px;
-            }
-            #time {
-                margin: 5px;
-                font-weight: bold;
-                font-size: large;
-            }
-        </style>
     </head>
     <body>
         <div id="controls">
-            <button class="back_button" onclick="history.back()">Back</button>
+            <button class="back_button" onclick="history.back()" aria-label="Go back">Back</button>
             <!-- <label><input type="radio" name="radarOrSat" id="radar" checked="checked">Radar</label> -->
             <!-- <label><input type="radio" name="radarOrSat" id="satellite">Sat</label> -->
 
-            <input type="button" class="button" id="prevFrame" value="<" />
-            <input type="button" class="button" id ="play" value=">>" />
-            <input type="button" class="button" id="nextFrame" value=">" />
+            <input type="button" class="button" id="prevFrame" value="<" aria-label="Previous frame" />
+            <input type="button" class="button" id="play" value=">>" aria-label="Play animation" />
+            <input type="button" class="button" id="nextFrame" value=">" aria-label="Next frame" />
             <div id="time"></div>
         </div>
         <div id="mapid"></div>

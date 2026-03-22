@@ -8,6 +8,7 @@ const assets = [
   "./radar/leaflet.js",
   "./radar/radar.html",
   "./radar/radar.js",
+  "./radar/style.css",
   "./radar/images/layers.png",
   "./radar/images/layers-2x.png",
   "./src/5-days.js",
@@ -41,6 +42,19 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(ASSET_CACHE)
     .then(cache => cache.addAll(assets))
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  console.log('ServiceWorker activating');
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames
+          .filter(cacheName => cacheName !== ASSET_CACHE)
+          .map(cacheName => caches.delete(cacheName))
+      );
+    })
   );
 });
 

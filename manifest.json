@@ -8,12 +8,13 @@
   "icons": [
     {
       "src": "icon-90x90.svg",
-      "type": "image/svg+xml", 
-      "sizes": "90x90",
+      "type": "image/svg+xml",
+      "sizes": "90x90"
+    },
+    {
       "src": "icon-144x144.svg",
-      "type": "image/svg+xml", 
+      "type": "image/svg+xml",
       "sizes": "144x144"
     }
   ]
 }
-

@@ -2,6 +2,10 @@
 
 import { getHash, convertSpd, convertTemp, calcGust, getWndDir, showError } from './utils.js';
 
+/**
+ * Main widget object handling weather display, search, and location services.
+ * @namespace Widget
+ */
 const Widget = {
   apiKey: getHash(),
   defaultUnits: '{ "temp": "C", "speed": "mph" }',
@@ -18,6 +22,10 @@ const Widget = {
   dayArray: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   refreshTimer: null,
 
+  /**
+   * Initializes the widget by loading stored preferences, setting up UI,
+   * fetching weather data, and starting auto-refresh.
+   */
   init() {
     this.loadStorage();
     this.createSearch();
@@ -26,8 +34,11 @@ const Widget = {
     this.startAutoRefresh();
   },
 
+  /**
+   * Loads unit and location preferences from localStorage.
+   * Sets defaults if not present or invalid.
+   */
   loadStorage() {
-    /* Check whether prefs in storage, save defaults if not */
     localStorage.units || localStorage.setItem('units', this.defaultUnits);
     localStorage.vars || localStorage.setItem('vars', this.defaultVars);
 
@@ -48,6 +59,9 @@ const Widget = {
     }
   },
 
+  /**
+   * Creates the location search form with geolocation button.
+   */
   createSearch() {
     document.getElementById('search').innerHTML = `
     <form id="searchForm">
@@ -61,6 +75,9 @@ const Widget = {
     document.getElementById('geoBtn').addEventListener('click', () => this.handleGeolocation());
   },
 
+  /**
+   * Creates the footer with navigation links and unit preference controls.
+   */
   createFooter() {
     const tempPrefs = ['C', 'F'];
     const tempPrefsDiv = this.generateRadioButtons(tempPrefs, this.units.temp, 'tempUnits', 'Temperature');
@@ -83,6 +100,9 @@ const Widget = {
     document.getElementById('spdUnits').addEventListener('change', e => this.changeUnits(e));
   },
 
+  /**
+   * Renders the main weather widget with current conditions and daily forecast.
+   */
   renderWidget() {
     const storedData = sessionStorage.getItem('weather_data');
     if (!storedData) {
@@ -158,6 +178,11 @@ const Widget = {
     this.toggleWarnings(document.querySelector('.warning-btn'));
   },
 
+  /**
+   * Generates HTML for the daily forecast row.
+   * @param {Array} data - Array of daily forecast data
+   * @returns {string} HTML string for daily forecast cells
+   */
   dailyForecast(data) {
     let forecastTable = '';
     const limit = Math.min(this.forecastDays, data.length);
@@ -197,6 +222,14 @@ const Widget = {
     return forecastTable;
   },
 
+  /**
+   * Generates HTML for a group of radio buttons.
+   * @param {string[]} prefs - Array of option values
+   * @param {string} selectedUnit - Currently selected value
+   * @param {string} name - Name attribute for radio inputs
+   * @param {string} label - Label text for the group
+   * @returns {string} HTML string of radio button form
+   */
   generateRadioButtons(prefs, selectedUnit, name, label) {
     let prefsDiv = `<form id="${name}" role="group" aria-label="${label}">`;
     for (const pref of prefs) {
@@ -208,12 +241,20 @@ const Widget = {
     return prefsDiv;
   },
 
+  /**
+   * Handles unit preference changes.
+   * @param {Event} e - Change event from radio button
+   */
   changeUnits(e) {
     this.units = { ...this.units, [e.target.name === 'tempUnits' ? 'temp' : 'speed']: e.target.value };
     localStorage.setItem('units', JSON.stringify(this.units));
     this.renderWidget();
   },
 
+  /**
+   * Toggles visibility of weather warnings when button is clicked.
+   * @param {HTMLElement} warningBtn - The warning button element
+   */
   toggleWarnings(warningBtn) {
     if (!warningBtn) return;
     warningBtn.addEventListener('click', () => {
@@ -226,6 +267,11 @@ const Widget = {
     });
   },
 
+  /**
+   * Formats weather alert data into HTML.
+   * @param {Array} warnings - Array of weather warning objects
+   * @returns {string} HTML string of formatted warnings
+   */
   formatWarnings(warnings) {
     let warningsText = '<button class="warning-btn" title="Click to view" aria-expanded="false">⚠️ Weather Warning</button>';
     warnings.forEach(warning => {
@@ -249,6 +295,10 @@ const Widget = {
     return warningsText;
   },
 
+  /**
+   * Renders location search results as clickable buttons.
+   * @param {Array} result - Array of location result objects
+   */
   renderSearchResults(result) {
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = '';
@@ -272,6 +322,13 @@ const Widget = {
     }
   },
 
+  /**
+   * Handles location selection and updates stored preferences.
+   * @param {number} lat - Latitude
+   * @param {number} lon - Longitude
+   * @param {string} place - Place name
+   * @param {string} state - State or country
+   */
   locationSelected(lat, lon, place, state) {
     if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) {
       showError('Invalid location coordinates');
@@ -286,6 +343,9 @@ const Widget = {
     this.callWeatherApi();
   },
 
+  /**
+   * Handles geolocation button click, requesting user location.
+   */
   handleGeolocation() {
     if (!navigator.geolocation) {
       showError('Geolocation is not supported by your browser');
@@ -307,6 +367,10 @@ const Widget = {
     );
   },
 
+  /**
+   * Handles location search form submission.
+   * @param {Event} e - Submit event
+   */
   callSearchApi(e) {
     e.preventDefault();
     const loc = document.getElementById('loc').value.trim();
@@ -325,6 +389,9 @@ const Widget = {
     this.callFetch(url, this.renderSearchResults.bind(this));
   },
 
+  /**
+   * Fetches weather data from the API.
+   */
   callWeatherApi() {
     const { lat, lon } = this.vars;
     if (!lat || !lon) {
@@ -341,6 +408,10 @@ const Widget = {
     this.callFetch(url, this.weatherApiCallback.bind(this));
   },
 
+  /**
+   * Callback for weather API response, stores data and triggers render.
+   * @param {Object} response - API response data
+   */
   weatherApiCallback(response) {
     if (!response) {
       showError('Empty response from weather API');
@@ -355,6 +426,11 @@ const Widget = {
     }
   },
 
+  /**
+   * Makes a fetch request with loading indicator and error handling.
+   * @param {string} url - URL to fetch
+   * @param {Function} callback - Function to call with parsed response
+   */
   callFetch(url, callback) {
     this.loader.classList.add('display');
     fetch(url)
@@ -387,12 +463,20 @@ const Widget = {
       });
   },
 
+  /**
+   * Starts automatic weather data refresh at configured interval.
+   */
   startAutoRefresh() {
     setInterval(() => {
       this.callWeatherApi();
     }, this.refreshInterval);
   },
 
+  /**
+   * Escapes HTML special characters to prevent XSS.
+   * @param {string} str - String to escape
+   * @returns {string} Escaped string safe for HTML insertion
+   */
   escapeHtml(str) {
     if (!str) return '';
     const div = document.createElement('div');

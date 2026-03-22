@@ -2,12 +2,19 @@
 
 import { getHash, convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour, showError } from './utils.js';
 
+/**
+ * Widget object for 5-day forecast display.
+ * @namespace FiveDays
+ */
 const FiveDays = {
   hash: getHash(),
   loader: document.getElementById('loading'),
   vars: null,
   units: null,
 
+  /**
+   * Initializes the 5-day forecast by loading preferences and fetching data.
+   */
   init() {
     try {
       this.vars = JSON.parse(localStorage.getItem('vars'));
@@ -26,6 +33,10 @@ const FiveDays = {
     this.callApi();
   },
 
+  /**
+   * Renders the 5-day forecast table.
+   * @param {Object} data - API response containing forecast data
+   */
   renderWidget(data) {
     let forecastTable = '';
     const { city } = data;
@@ -53,8 +64,7 @@ const FiveDays = {
       const gustColour = wndSpdColour(item.wind.gust);
       const wndDir = getWndDir(item.wind.deg);
       const { pressure } = item.main;
-      let rain = '';
-      item.rain ? rain = `<b>${item.rain['3h'].toFixed(1)}mm</b>` : rain = '0mm';
+      const rain = item.rain ? `<b>${item.rain['3h'].toFixed(1)}mm</b>` : '0mm';
 
       time = new Date(time);
       const ftime = time.getHours().toString().padStart(2, 0);
@@ -69,7 +79,7 @@ const FiveDays = {
       forecastTable += `
          <tr class="${dnClass}"><td><strong>${day} ${ftime}h</strong></td>
            <td class="temp-pad-right" style="color:${tbg}"><strong>${temp}&deg;${tempUnit}</strong></td>
-           <td><image src="PNG/${icon}.png" alt="${description}" width="30" height="30"></td>
+           <td><img src="PNG/${icon}.png" alt="${description}" width="30" height="30"></td>
            <td class="temp-smallcaps">${description}</td><td>${rain}</td>
            <td><span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
            <td>${wndDir}</td><td style="background-color: ${clColour}">${cloud}&percnt;</td><td>${pressure}mb</td></tr>`;
@@ -100,6 +110,9 @@ const FiveDays = {
      </table>`;
   },
 
+  /**
+   * Fetches 5-day forecast data from the API.
+   */
   callApi() {
     const { lat, lon } = this.vars;
     if (lat && lon && this.hash) {

@@ -3,72 +3,132 @@
  * for possible re-use later */
 'use strict';
 
+/**
+ * Radar widget object for displaying weather radar animation on a map.
+ * @namespace Radar
+ */
 const Radar = {
-  vars: JSON.parse(localStorage.getItem('vars')),
+  vars: null,
   data: {},
   radarOrSat: 'radar',
   radarLayer: [],
   satLayer: [],
-  mapLayer: null,// Will reference either radarLayer or satLayer
+  mapLayer: null,
   currentFrame: 0,
   ts: '',
   frame: null,
-  colors : 0,
+  colors: 0,
   smooth: 0,
-  snow : 0,
+  snow: 0,
   animation: 0,
   playBtn: document.getElementById('play'),
   map: null,
-
+  rainviewerApiUrl: 'https://api.rainviewer.com/public/weather-maps.json',
+  osmTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  
+  /**
+   * Initializes the radar widget by setting up event listeners,
+   * creating the map, and fetching radar data.
+   */
   init() {
-    // document.getElementById('radar').addEventListener('click', e => setRadarOrSat(e));
-    // document.getElementById('satellite').addEventListener('click', e => setRadarOrSat(e));
+    this.vars = this.loadVars();
+    // document.getElementById('radar').addEventListener('click', e => this.setRadarOrSat(e));
+    // document.getElementById('satellite').addEventListener('click', e => this.setRadarOrSat(e));
     document.getElementById('prevFrame').addEventListener('click', e => this.nextButton(e));
     document.getElementById('nextFrame').addEventListener('click', e => this.nextButton(e));
-    this.playBtn.addEventListener('click', this.playStop);
+    this.playBtn.addEventListener('click', e => this.playStop(e));
     this.createMap();
     this.callApi();
   },
 
+  /**
+   * Displays an error message to the user in the page.
+   * @param {string} message - Error message to display
+   */
+  showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.setAttribute('role', 'alert');
+    errorDiv.setAttribute('aria-live', 'assertive');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    const container = document.getElementById('controls');
+    if (container) {
+      container.innerHTML = '';
+      container.appendChild(errorDiv);
+    }
+  },
+
+  /**
+   * Loads and parses location variables from localStorage with fallback.
+   * @returns {Object} Location variables with lat, lon, and place
+   */
+  loadVars() {
+    try {
+      return JSON.parse(localStorage.getItem('vars'));
+    } catch {
+      return { lat: 50.15, lon: -5.07, place: 'Falmouth' };
+    }
+  },
+
+  /**
+   * Handles radar/satellite toggle selection.
+   * @param {Event} e - Click event from radio button
+   */
+  setRadarOrSat(e) {
+    this.radarOrSat = e.target.id;
+    this.createRadarLayer();
+    this.animation = 0;
+    document.getElementById('play').value = '>>';
+  },
+
+  /**
+   * Creates the Leaflet map centered on the stored location.
+   */
   createMap() {
     this.map = L.map('mapid', { maxZoom: 7, zoomControl: false}).setView([this.vars.lat, this.vars.lon], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer(this.osmTileUrl, {
       attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors | Radar data &copy; <a href="https://rainviewer.com">RainViewer</a>'
     }).addTo(this.map);
-    const mark = new L.CircleMarker([this.vars.lat, this.vars.lon]).addTo(this.map);
+    new L.CircleMarker([this.vars.lat, this.vars.lon]).addTo(this.map);
     L.control.zoom({
       position: 'bottomleft'
     }).addTo(this.map);
   },
 
-  // function setRadarOrSat(e) {
-  //     radarOrSat = e.target.id;
-  //     createRadarLayer();
-  //     animation = 0;
-  //     document.getElementById('play').value = '>>';
-  // }
-
+  /**
+   * Handles frame navigation button clicks.
+   * @param {Event} e - Click event from prev/next button
+   */
   nextButton(e) {
-    let next = 0;
-    e.target.id === 'nextFrame' ? next = 1 : next = -1;
+    const next = e.target.id === 'nextFrame' ? 1 : -1;
     this.changeFrame(next);
   },
 
+  /**
+   * Changes the current radar frame by the specified offset.
+   * @param {number} next - Frame offset (1 for next, -1 for previous)
+   */
   changeFrame(next) {
     this.currentFrame += next;
-    if (this.currentFrame > this.frame.length - 1) this.currentFrame -= 1;
-    if (this.currentFrame < 0) this.currentFrame += 1;
+    if (this.currentFrame > this.frame.length - 1) {
+      this.currentFrame -= 1;
+    }
+    if (this.currentFrame < 0) {
+      this.currentFrame += 1;
+    }
     this.renderLayer(this.currentFrame);
     this.animation = 0;
   },
 
-  playStop() {
+  /**
+   * Toggles between play and stop states for radar animation.
+   */
+  playStop() { console.log(this);
     if (this.animation) {
       clearTimeout(this.animation);
       this.animation = 0;
       document.getElementById('play').value = '>>';
-    }
-    else {
+    } else {
       if (this.currentFrame >= this.mapLayer.length - 1) {
         this.currentFrame = 0;
         for (let i = this.mapLayer.length - 1; i >= 0; i--) {
@@ -84,28 +144,39 @@ const Radar = {
     }
   },
 
-  playAnimation() { 
+  /**
+   * Recursively plays the radar animation frame by frame.
+   */
+  playAnimation() {
     if (this.animation && this.currentFrame < this.mapLayer.length) {
-      playBtn.value = '| |';
+      this.playBtn.value = '| |';
       this.mapLayer[this.currentFrame].setOpacity(0.7);
-      displayTime(this.frame[this.currentFrame].time);
-      if (this.mapLayer[this.currentFrame - 1]) this.map.removeLayer(this.mapLayer[this.currentFrame - 1]);
+      this.displayTime(this.frame[this.currentFrame].time);
+      if (this.mapLayer[this.currentFrame - 1]) {
+        this.map.removeLayer(this.mapLayer[this.currentFrame - 1]);
+      }
       this.currentFrame += 1;
       this.animation = setTimeout(() => this.playAnimation(), 1000);
-      // Detect anination end
       if (this.currentFrame === this.mapLayer.length) {
         this.animation = 0;
-        playBtn.value = '>>';
+        this.playBtn.value = '>>';
       }
     }
   },
 
+  /**
+   * Updates the timestamp display for the current frame.
+   * @param {number} t - Unix timestamp in seconds
+   */
   displayTime(t) {
     const timeStamp = new Date(t * 1000);
     this.ts = `${timeStamp.getHours().toString().padStart(2, '0')}:${timeStamp.getMinutes().toString().padStart(2, '0')}`;
     document.getElementById('time').innerHTML = `Frame time: ${this.ts}`;
   },
 
+  /**
+   * Creates the radar or satellite layer based on current mode.
+   */
   createRadarLayer() {
     if (this.radarOrSat === 'radar') {
       this.mapLayer = this.radarLayer;
@@ -126,6 +197,10 @@ const Radar = {
     this.renderLayer(this.currentFrame);
   },
 
+  /**
+   * Renders a specific radar frame on the map.
+   * @param {number} newFrame - Frame index to render
+   */
   renderLayer(newFrame) {
     this.radarLayer.forEach(layer => this.map.removeLayer(layer));
     this.satLayer.forEach(layer => this.map.removeLayer(layer));
@@ -142,11 +217,12 @@ const Radar = {
     }
   },
 
+  /**
+   * Fetches radar data from RainViewer API.
+   */
   callApi() {
-    //displayLoading();
-    fetch('https://api.rainviewer.com/public/weather-maps.json')
+    fetch(this.rainviewerApiUrl)
       .then(response => {
-        //hideLoading();
         if (!response.ok) {
           throw new Error(`Network response not ok: ${response.statusText}`);
         }
@@ -157,8 +233,8 @@ const Radar = {
         this.data = result;
         this.createRadarLayer();
       })
-      .catch(err => alert(`Error: ${err}`));
+      .catch(err => this.showError(`Error: ${err}`));
   },
-}
+};
 
 Radar.init();

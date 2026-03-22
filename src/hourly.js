@@ -2,10 +2,17 @@
 
 import { convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour, showError } from './utils.js';
 
+/**
+ * Widget object for 48-hour hourly forecast display.
+ * @namespace Hourly
+ */
 const Hourly = {
   place: null,
   units: null,
 
+  /**
+   * Initializes the hourly forecast by loading preferences and data.
+   */
   init() {
     try {
       const storedVars = JSON.parse(localStorage.getItem('vars'));
@@ -30,6 +37,10 @@ const Hourly = {
     }
   },
 
+  /**
+   * Renders the 48-hour hourly forecast table.
+   * @param {string} result - JSON string of API response data
+   */
   renderWidget(result) {
     let data;
     try {
@@ -62,8 +73,7 @@ const Hourly = {
       const gust = calcGust(item.wind_gust, spdUnit);
       const gustColour = wndSpdColour(item.wind_gust);
       const { pressure } = item;
-      let rain = '';
-      item.rain ? rain = `<b>${item.rain['1h'].toFixed(1)}mm</b>` : rain = '0mm';
+      const rain = item.rain ? `<b>${item.rain['1h'].toFixed(1)}mm</b>` : '0mm';
       const cloud = item.clouds;
       const clColour = cloudColour(cloud);
 
@@ -82,7 +92,7 @@ const Hourly = {
       forecastTable += `
          <tr class="${dnClass}"><td><strong>${day} ${ftime}h</strong></td>
            <td class="temp-pad-right" style="color:${tbg}"><strong>${temp}&deg;${tempUnit}</strong></td>
-           <td><image src="PNG/${icon}.png" alt="${description}" width="30" height="30"></td>
+           <td><img src="PNG/${icon}.png" alt="${description}" width="30" height="30"></td>
            <td class="temp-smallcaps">${description}</td><td>${rain}</td>
            <td>
            <span style="color: ${wspColour}">${wndSpd}</span><span style="color: ${gustColour}">${gust}</span>&nbsp;${spdUnit}</td>
@@ -116,4 +126,3 @@ const Hourly = {
 };
 
 Hourly.init();
-
