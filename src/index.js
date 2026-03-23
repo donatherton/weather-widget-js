@@ -1,6 +1,8 @@
 'use strict';
 
-import { getHash, convertSpd, convertTemp, calcGust, getWndDir, showError } from './utils.js';
+import {
+ getHash, convertSpd, convertTemp, calcGust, getWndDir, showError,
+} from './utils.js';
 
 /**
  * Main widget object handling weather display, search, and location services.
@@ -258,7 +260,10 @@ const Widget = {
    * @param {HTMLElement} warningBtn - The warning button element
    */
   toggleWarnings(warningBtn) {
-    if (!warningBtn) return;
+    if (!warningBtn) {
+return;
+}
+
     warningBtn.addEventListener('click', () => {
       const warningTexts = document.querySelectorAll('.warning-txt');
       const isHidden = warningTexts[0]?.style.display === 'none';
@@ -338,7 +343,9 @@ const Widget = {
     }
 
     //const fullPlace = `${place} ${state}`;
-    const vars = { lat, lon, place: place, state: state };
+    const vars = {
+ lat, lon, place, state,
+};
     localStorage.setItem('vars', JSON.stringify(vars));
     this.vars = vars;
     document.getElementById('results').innerHTML = '';
@@ -365,7 +372,7 @@ const Widget = {
         showError('Unable to get your location');
         this.loader.classList.remove('display');
       },
-      {timeout: 10000}
+      {timeout: 10000},
     );
   },
 
@@ -480,7 +487,10 @@ const Widget = {
    * @returns {string} Escaped string safe for HTML insertion
    */
   escapeHtml(str) {
-    if (!str) return '';
+    if (!str) {
+return '';
+}
+
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;

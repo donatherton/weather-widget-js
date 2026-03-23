@@ -25,7 +25,7 @@ const Radar = {
   map: null,
   rainviewerApiUrl: 'https://api.rainviewer.com/public/weather-maps.json',
   osmTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  
+
   /**
    * Initializes the radar widget by setting up event listeners,
    * creating the map, and fetching radar data.
@@ -87,11 +87,11 @@ const Radar = {
   createMap() {
     this.map = L.map('mapid', { maxZoom: 7, zoomControl: false}).setView([this.vars.lat, this.vars.lon], 7);
     L.tileLayer(this.osmTileUrl, {
-      attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors | Radar data &copy; <a href="https://rainviewer.com">RainViewer</a>'
+      attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors | Radar data &copy; <a href="https://rainviewer.com">RainViewer</a>',
     }).addTo(this.map);
     new L.CircleMarker([this.vars.lat, this.vars.lon]).addTo(this.map);
     L.control.zoom({
-      position: 'bottomleft'
+      position: 'bottomleft',
     }).addTo(this.map);
   },
 
@@ -113,9 +113,11 @@ const Radar = {
     if (this.currentFrame > this.frame.length - 1) {
       this.currentFrame -= 1;
     }
+
     if (this.currentFrame < 0) {
       this.currentFrame += 1;
     }
+
     this.renderLayer(this.currentFrame);
     this.animation = 0;
   },
@@ -135,6 +137,7 @@ const Radar = {
           this.renderLayer(i);
         }
       }
+
       for (let i = this.currentFrame; i < this.mapLayer.length; i++) {
         this.mapLayer[i].addTo(this.map).setOpacity(0);
       }
@@ -155,6 +158,7 @@ const Radar = {
       if (this.mapLayer[this.currentFrame - 1]) {
         this.map.removeLayer(this.mapLayer[this.currentFrame - 1]);
       }
+
       this.currentFrame += 1;
       this.animation = setTimeout(() => this.playAnimation(), 1000);
       if (this.currentFrame === this.mapLayer.length) {
@@ -205,11 +209,12 @@ const Radar = {
     this.radarLayer.forEach(layer => this.map.removeLayer(layer));
     this.satLayer.forEach(layer => this.map.removeLayer(layer));
     if (this.frame[newFrame]) {
-      this.mapLayer[newFrame] ||= new L.TileLayer(`${this.data.host}${this.frame[newFrame].path}/256/{z}/{x}/{y}/${this.colors}/${this.smooth}_${this.snow}.png`,
+      this.mapLayer[newFrame] ||= new L.TileLayer(
+`${this.data.host}${this.frame[newFrame].path}/256/{z}/{x}/{y}/${this.colors}/${this.smooth}_${this.snow}.png`,
         {
           tileSize: 256,
           opacity: 0.7,
-        }
+        },
       );
 
       this.map.addLayer(this.mapLayer[newFrame]);

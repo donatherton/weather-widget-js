@@ -1,6 +1,8 @@
 'use strict';
 
-import { convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour, showError } from './utils.js';
+import {
+ convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour, showError,
+} from './utils.js';
 
 /**
  * Widget object for 48-hour hourly forecast display.
@@ -49,6 +51,7 @@ const Hourly = {
       showError('Failed to parse weather data');
       return;
     }
+
     let forecastTable = '';
 
     let sunrise = data.current.sunrise + data.timezone_offset;
@@ -62,7 +65,7 @@ const Hourly = {
 
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
 
-    for (let item of data.hourly) {
+    for (const item of data.hourly) {
       const ts = item.dt + data.timezone_offset;
       const temp = convertTemp(item.temp, tempUnit).toFixed(1);
       const tbg = tempColour(item.temp);

@@ -1,6 +1,8 @@
 'use strict';
 
-import { getHash, convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour, showError } from './utils.js';
+import {
+ getHash, convertTemp, convertSpd, calcGust, getWndDir, dayNight, tempColour, cloudColour, wndSpdColour, showError,
+} from './utils.js';
 
 /**
  * Widget object for 5-day forecast display.
@@ -50,7 +52,7 @@ const FiveDays = {
     const tempUnit = this.units.temp;
     const spdUnit = this.units.speed;
 
-    for (let item of data.list) {
+    for (const item of data.list) {
       let time = (item.dt + city.timezone) * 1000;
       const temp = convertTemp(item.main.temp - 273.15, tempUnit).toFixed(1);
       const tbg = tempColour(item.main.temp - 273.15);
@@ -73,8 +75,11 @@ const FiveDays = {
 
       const dn = dayNight(Number(sunriseHour), Number(sunsetHour), ftime);
       let dnClass = 'forecast';
-      if (dn === '-d') dnClass = 'forecast day';
-      else if (dn === '-n') dnClass = 'forecast night';
+      if (dn === '-d') {
+dnClass = 'forecast day';
+} else if (dn === '-n') {
+dnClass = 'forecast night';
+}
 
       forecastTable += `
          <tr class="${dnClass}"><td><strong>${day} ${ftime}h</strong></td>
@@ -127,7 +132,7 @@ const FiveDays = {
           return response.json();
         })
         .then(result => this.renderWidget(result))
-        .catch(err => showError(`Error: ${err}`))
+        .catch(err => showError(`Error: ${err}`));
     }
   },
 };

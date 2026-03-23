@@ -1,7 +1,3 @@
-/**
- * Returns the OpenWeatherMap API key.
- * @returns {string} API key for weather data requests
- */
 export function getHash() {
   return '7f8871108ffeac097a03c40598d0232f';
 }
