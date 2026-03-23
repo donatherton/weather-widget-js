@@ -146,6 +146,7 @@ const Widget = {
 
     const warnings = result.alerts ? this.formatWarnings(result.alerts) : '';
     const safePlace = this.escapeHtml(this.vars.place);
+    const safeState = this.escapeHtml(this.vars.state);
     const safeDescription = this.escapeHtml(description);
 
     document.getElementById('container').innerHTML = `
@@ -153,6 +154,7 @@ const Widget = {
         <tr>
           <td colspan="3" class="cell-pad">
             <h3>${safePlace}</h3>
+            <h4>${safeState}</h4>
             <p><span style="font-size:large;font-weight:bold">${temp}&deg;${this.units.temp}</span> f/l ${feelsLike}&deg;${this.units.temp}</p>
             <p class="temp-smallcaps">${safeDescription}<br>
             <img src="PNG/${icon}.png" width="80" height="80" alt="${safeDescription}"></p>
@@ -335,8 +337,8 @@ const Widget = {
       return;
     }
 
-    const fullPlace = `${place} ${state}`;
-    const vars = { lat, lon, place: fullPlace };
+    //const fullPlace = `${place} ${state}`;
+    const vars = { lat, lon, place: place, state: state };
     localStorage.setItem('vars', JSON.stringify(vars));
     this.vars = vars;
     document.getElementById('results').innerHTML = '';

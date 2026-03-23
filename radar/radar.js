@@ -66,7 +66,7 @@ const Radar = {
     try {
       return JSON.parse(localStorage.getItem('vars'));
     } catch {
-      return { lat: 50.15, lon: -5.07, place: 'Falmouth' };
+      return { lat: 51.5, lon: 0, place: 'London' };
     }
   },
 
@@ -74,12 +74,12 @@ const Radar = {
    * Handles radar/satellite toggle selection.
    * @param {Event} e - Click event from radio button
    */
-  setRadarOrSat(e) {
-    this.radarOrSat = e.target.id;
-    this.createRadarLayer();
-    this.animation = 0;
-    document.getElementById('play').value = '>>';
-  },
+  // setRadarOrSat(e) {
+  //   this.radarOrSat = e.target.id;
+  //   this.createRadarLayer();
+  //   this.animation = 0;
+  //   document.getElementById('play').value = '>>';
+  // },
 
   /**
    * Creates the Leaflet map centered on the stored location.
@@ -123,7 +123,7 @@ const Radar = {
   /**
    * Toggles between play and stop states for radar animation.
    */
-  playStop() { console.log(this);
+  playStop() {
     if (this.animation) {
       clearTimeout(this.animation);
       this.animation = 0;
