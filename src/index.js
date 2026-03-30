@@ -127,7 +127,7 @@ const Widget = {
 
     const data = result.current;
     const d = new Date((data.dt + result.timezone_offset) * 1000);
-    const h = d.getHours().toString().padStart(2, '0');
+    const h = d.getUTCHours().toString().padStart(2, '0');
     const m = d.getMinutes().toString().padStart(2, '0');
     const s = d.getSeconds().toString().padStart(2, '0');
 
@@ -140,10 +140,10 @@ const Widget = {
     const { pressure, humidity } = data;
 
     const sunrise = new Date((data.sunrise + result.timezone_offset) * 1000);
-    const sunriseHour = sunrise.getHours().toString().padStart(2, '0');
+    const sunriseHour = sunrise.getUTCHours().toString().padStart(2, '0');
     const sunriseMin = sunrise.getMinutes().toString().padStart(2, '0');
     const sunset = new Date((data.sunset + result.timezone_offset) * 1000);
-    const sunsetHour = sunset.getHours().toString().padStart(2, '0');
+    const sunsetHour = sunset.getUTCHours().toString().padStart(2, '0');
     const sunsetMin = sunset.getMinutes().toString().padStart(2, '0');
 
     const warnings = result.alerts ? this.formatWarnings(result.alerts) : '';
