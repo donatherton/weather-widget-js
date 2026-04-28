@@ -132,7 +132,10 @@ dnClass = 'forecast night';
           return response.json();
         })
         .then(result => this.renderWidget(result))
-        .catch(err => showError(`Error: ${err}`));
+        .catch(err => {
+          showError(`Error: ${err}`)
+          this.loader.classList.remove('display');
+        });
     }
   },
 };
