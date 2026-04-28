@@ -57,9 +57,9 @@ const Hourly = {
     let sunrise = data.current.sunrise + data.timezone_offset;
     let sunset = data.current.sunset + data.timezone_offset;
     sunrise = new Date(sunrise * 1000);
-    const sunriseHour = sunrise.getHours().toString().padStart(2, 0);
+    const sunriseHour = sunrise.getUTCHours().toString().padStart(2, 0);
     sunset = new Date(sunset * 1000);
-    const sunsetHour = sunset.getHours().toString().padStart(2, 0);
+    const sunsetHour = sunset.getUTCHours().toString().padStart(2, 0);
     const tempUnit = this.units.temp;
     const spdUnit = this.units.speed;
 
@@ -81,7 +81,7 @@ const Hourly = {
       const clColour = cloudColour(cloud);
 
       const time = new Date(ts * 1000);
-      const ftime = time.getHours().toString().padStart(2, 0);
+      const ftime = time.getUTCHours().toString().padStart(2, 0);
       const day = days[time.getDay()];
 
       const dn = dayNight(Number(sunriseHour), Number(sunsetHour), ftime);
