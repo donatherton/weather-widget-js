@@ -129,7 +129,7 @@ const Radar = {
     if (this.animation) {
       clearTimeout(this.animation);
       this.animation = 0;
-      document.getElementById('play').value = '>>';
+      document.getElementById('play').value = '\u25B6';
     } else {
       if (this.currentFrame >= this.mapLayer.length - 1) {
         this.currentFrame = 0;
@@ -163,7 +163,7 @@ const Radar = {
       this.animation = setTimeout(() => this.playAnimation(), 1000);
       if (this.currentFrame === this.mapLayer.length) {
         this.animation = 0;
-        this.playBtn.value = '>>';
+        this.playBtn.value = '\u25B6';
       }
     }
   },
