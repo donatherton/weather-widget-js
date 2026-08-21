@@ -13,19 +13,9 @@ export function convertSpd(speed, unit) {
     case 'kt': return speed * 1.944;
     case 'mph': return speed * 2.236936;
     case 'kph': return speed * 3.6;
-    case 'Bf': return beaufort(speed);
+    case 'Bf': return Math.min((speed / 0.836) ** (2 / 3), 12);
     default: return speed;
   }
-}
-
-/**
- * Calculates Beaufort scale from wind speed in m/s.
- * Beaufort scale ranges from 0 to 12.
- * @param {number} speed - Wind speed in meters per second
- * @returns {number} Beaufort scale value (0-12)
- */
-function beaufort(speed) {
-  return Math.min((speed / 0.836) ** (2 / 3), 12);
 }
 
 /**
