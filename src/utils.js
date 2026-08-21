@@ -25,13 +25,7 @@ export function convertSpd(speed, unit) {
  * @returns {number} Beaufort scale value (0-12)
  */
 function beaufort(speed) {
-  let s = speed;
-  s = (s / 0.836) ** (2 / 3);
-  if (s > 12) {
-s = 12;
-}
-
-  return s;
+  return Math.min((speed / 0.836) ** (2 / 3), 12);
 }
 
 /**

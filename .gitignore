@@ -1,4 +1,11 @@
 node_modules/
+AGENTS.md
+eslint.config.js
+package-lock.json
+package.json
+test/
 eslint.config.mjs
 .git/
 .env
+src/utils\ \(copy\ 1\).js
+src/utils.js~

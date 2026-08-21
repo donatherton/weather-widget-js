@@ -8,7 +8,7 @@
  * @namespace Radar
  */
 const Radar = {
-  vars: null,
+  vars: {},
   data: {},
   radarOrSat: 'radar',
   radarLayer: [],
@@ -152,7 +152,7 @@ const Radar = {
    */
   playAnimation() {
     if (this.animation && this.currentFrame < this.mapLayer.length) {
-      this.playBtn.value = '| |';
+      this.playBtn.value = '\u275a\u275a';
       this.mapLayer[this.currentFrame].setOpacity(0.7);
       this.displayTime(this.frame[this.currentFrame].time);
       if (this.mapLayer[this.currentFrame - 1]) {

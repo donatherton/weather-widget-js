@@ -1,7 +1,7 @@
 'use strict';
 
 import {
- getHash, convertSpd, convertTemp, calcGust, getWndDir, showError,
+  getHash, convertSpd, convertTemp, calcGust, getWndDir, showError,
 } from './utils.js';
 
 /**
